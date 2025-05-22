@@ -1,0 +1,4 @@
+﻿  source.cpp
+     Creating library C:\Python_projects\PracticeProject\cpp_part\pybind\x64\Release\pybind.lib and object C:\Python_projects\PracticeProject\cpp_part\pybind\x64\Release\pybind.exp
+MSVCRT.lib(exe_main.obj) : error LNK2001: unresolved external symbol main
+C:\Python_projects\PracticeProject\cpp_part\pybind\x64\Release\pybind.exe : fatal error LNK1120: 1 unresolved externals

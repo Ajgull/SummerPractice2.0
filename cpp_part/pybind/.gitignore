@@ -1,0 +1,6 @@
+.vs/
+*.ipch
+.idea
+venv
+.venv
+__pycache__/

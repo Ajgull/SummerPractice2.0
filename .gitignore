@@ -1,0 +1,10 @@
+cpp_part/.vs
+cpp_part/pybind/.vs
+*.ipch
+python_part/.idea
+cpp_part/.idea
+python_part/venv
+.idea
+venv
+.venv
+__pycache__/
