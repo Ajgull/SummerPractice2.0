@@ -18,9 +18,6 @@ class DataProcessor:
             z_array = input_data[:, 0]
             v_array = input_data[:, 1]
 
-            print(z_array)
-            print(v_array)
-
             z_filtered, v_filtered, z_steps, v_steps = example.perform_calculation(
                 z_array, v_array, min_z, max_z, step, contrast, self.undefined_value
             )

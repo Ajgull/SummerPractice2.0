@@ -1,7 +1,7 @@
 from setuptools import setup
 from pybind11.setup_helpers import Pybind11Extension, build_ext
-import pybind11
 
+# python C:\Python_projects\PracticeProject\python_part\setup.py build_ext --inplace
 ext_modules = [
     Pybind11Extension(
         "example",  # Имя модуля
