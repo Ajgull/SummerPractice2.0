@@ -68,7 +68,7 @@ class Model:
             return
 
     def perform_calculation2(self, min_z, max_z, contrast, step, undef_val):
-        print(f'perform calculation pybind')
+        print(f'perform calculation pybind2')
         self.undefined_value = undef_val
         if self.data_frame is not None and not self.data_frame.empty:
             input_data = self.data_frame.iloc[:, :2].to_numpy(dtype=np.float64)
@@ -91,6 +91,15 @@ class Model:
             print(f'No data to calculate')
             return
 
+    def compute_statistics2(self):
+        if self.result is None:
+            print(f"No results to calculate statistics2")
+            return
+
+        z_steps = self.result[1]
+
+        self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std = example.calculate_statistics2(z_steps)
+        return self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std
 
     def compute_statistics(self):
         if self.result is None:

@@ -92,6 +92,43 @@ py::tuple perform_calculation(
     );
 }
 
+py::tuple calculate_statistics(py::array_t<double> arr) {
+    auto buf = arr.request();
+
+    if (buf.ndim != 1)
+        throw std::runtime_error("Input array must be 1D");
+
+    double* ptr = static_cast<double*>(buf.ptr);
+    size_t n = buf.size;
+
+    if (n == 0)
+        throw std::runtime_error("Input array is empty");
+
+    double min_val = std::numeric_limits<double>::max();
+    double max_val = std::numeric_limits<double>::lowest();
+    double sum = 0.0;
+
+    // Вычисляем минимум, максимум и сумму
+    for (size_t i = 0; i < n; ++i) {
+        double val = ptr[i];
+        if (val < min_val) min_val = val;
+        if (val > max_val) max_val = val;
+        sum += val;
+    }
+
+    double mean = sum / n;
+
+    // Вычисляем стандартное отклонение
+    double sq_diff_sum = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        double diff = ptr[i] - mean;
+        sq_diff_sum += diff * diff;
+    }
+    double stddev = std::sqrt(sq_diff_sum / n);
+
+    return py::make_tuple(min_val, max_val, mean, stddev);
+}
+
 int add(int i, int j) {
     return i + j;
 }
@@ -143,6 +180,8 @@ PYBIND11_MODULE(example, m) {
         py::arg("step"),
         py::arg("contrast"),
         py::arg("undef_val"));
+
+    m.def("calculate_statistics2", &calculate_statistics, "Calculate min, max, mean and stddev of a 1D numpy array");
 
     m.def("add", &add, "A function that adds two numbers");
 

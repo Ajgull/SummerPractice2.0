@@ -92,8 +92,8 @@ class MainWindow(QMainWindow):
 
         self.plot_results(v_data, z_data, x_steps, z_steps)
 
-        # v_min, v_max, v_mean, v_std = self.model.compute_statistics()
-        # self.preform_statistics(v_min, v_max, v_mean, v_std)
+        v_min, v_max, v_mean, v_std = self.model.compute_statistics2()
+        self.preform_statistics(v_min, v_max, v_mean, v_std)
 
     def preform_statistics(self, v_min, v_max, v_mean, v_std):
         self.ui.LB_Min_Val.setText(str(format(v_min, '.2f')))
