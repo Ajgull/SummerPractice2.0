@@ -39,13 +39,13 @@ df = pd.DataFrame({
 })
 
 processor = DataProcessor(df)
-v_f, z_f, x_s, z_s = processor.perform_calculation_pybind(1, 9, contrast=1, step=0.5, undef_val=-999.25)
+v_f, z_f, v_s, z_s = processor.perform_calculation_pybind(1, 9, contrast=1, step=2, undef_val=-999.25)
 
 plt.figure(figsize=(10, 6))
 
 plt.plot(v_f, z_f, color='blue', label='Original graph')
 
-plt.plot(z_s, x_s, color='red', label='Step graph')
+plt.step(v_s, z_s, color='red', label='Step graph')
 
 plt.xlabel('v')
 plt.ylabel('z')

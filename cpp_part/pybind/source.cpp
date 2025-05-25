@@ -20,27 +20,67 @@ py::tuple perform_calculation(
     double* z_ptr = static_cast<double*>(z_buf.ptr);
     size_t n = v_buf.size;
 
-    std::vector<double> v_filtered1, z_filtered1;
-    std::vector<double> v_steps, z_steps;
+    std::vector<double> v_filtered, z_filtered;
 
     for (size_t i = 0; i < n; i++) {
         double z = z_ptr[i];
         double v = v_ptr[i];
         if (v != undef_val && z >= min_z && z <= max_z) {
-            v_filtered1.push_back(v);
-            z_filtered1.push_back(z);
-            v_steps.push_back(v);
-            z_steps.push_back(z);
+            v_filtered.push_back(v);
+            z_filtered.push_back(z);
         }
     }
 
-    py::array_t<double> v_result(v_filtered1.size());
-    py::array_t<double> z_result(z_filtered1.size());
+    if (z_filtered.empty() || v_filtered.empty()) {
+        py::array_t<double> empty_array(0);
+        return py::make_tuple(empty_array, empty_array, empty_array, empty_array);
+    }
+
+    // Построение ступенчатого графика с шагом step
+    // Определяем количество шагов
+    const double z_start = z_filtered.front();
+    const double z_end = z_filtered.back();
+    const size_t num_steps = static_cast<size_t>(std::ceil((z_end - z_start) / step)) + 1;
+
+    std::vector<double> z_steps(num_steps);
+    std::vector<double> v_steps(num_steps);
+
+    size_t current_index = 0;
+    double last_valid_v = 0.0; // Для запоминания последнего валидного значения
+
+    for (size_t step_idx = 0; step_idx < num_steps; ++step_idx) {
+        const double z0 = z_start + step_idx * step;
+        const double z1 = z0 + step;
+
+        // Подсчет суммы и количества элементов в сегменте
+        double sum = 0.0;
+        size_t count = 0;
+
+        while (current_index < z_filtered.size() && z_filtered[current_index] < z1) {
+            sum += v_filtered[current_index];
+            count++;
+            current_index++;
+        }
+
+        // Расчет среднего значения
+        if (count > 0) {
+            last_valid_v = sum / count;
+            v_steps[step_idx] = last_valid_v;
+        }
+        else {
+            v_steps[step_idx] = (step_idx > 0) ? v_steps[step_idx - 1] : 0.0;
+        }
+
+        z_steps[step_idx] = z0;
+    }
+
+    py::array_t<double> v_result(v_filtered.size());
+    py::array_t<double> z_result(z_filtered.size());
     py::array_t<double> v_steps_result(v_steps.size());
     py::array_t<double> z_steps_result(z_steps.size());
 
-    std::memcpy(v_result.mutable_data(), v_filtered1.data(), v_filtered1.size() * sizeof(double));
-    std::memcpy(z_result.mutable_data(), z_filtered1.data(), z_filtered1.size() * sizeof(double));
+    std::memcpy(v_result.mutable_data(), v_filtered.data(), v_filtered.size() * sizeof(double));
+    std::memcpy(z_result.mutable_data(), z_filtered.data(), z_filtered.size() * sizeof(double));
     std::memcpy(v_steps_result.mutable_data(), v_steps.data(), v_steps.size() * sizeof(double));
     std::memcpy(z_steps_result.mutable_data(), z_steps.data(), z_steps.size() * sizeof(double));
 
