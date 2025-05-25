@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
         print(self.model.data_frame.head())
 
     def calculate(self):
-        v_data, z_data, x_steps, z_steps = self.model.perform_calculation(
+        v_data, z_data, x_steps, z_steps = self.model.perform_calculation2(
             self.ui.SB_Min_Z.value(),
             self.ui.SB_Max_Z.value(),
             self.ui.SB_Contrast.value(),
@@ -92,8 +92,8 @@ class MainWindow(QMainWindow):
 
         self.plot_results(v_data, z_data, x_steps, z_steps)
 
-        v_min, v_max, v_mean, v_std = self.model.compute_statistics()
-        self.preform_statistics(v_min, v_max, v_mean, v_std)
+        # v_min, v_max, v_mean, v_std = self.model.compute_statistics()
+        # self.preform_statistics(v_min, v_max, v_mean, v_std)
 
     def preform_statistics(self, v_min, v_max, v_mean, v_std):
         self.ui.LB_Min_Val.setText(str(format(v_min, '.2f')))

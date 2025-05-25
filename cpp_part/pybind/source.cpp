@@ -1,7 +1,6 @@
 #include <vector>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include <cstring>
 
 namespace py = pybind11;
 
@@ -27,9 +26,9 @@ py::tuple perform_calculation(
     for (size_t i = 0; i < n; i++) {
         double z = z_ptr[i];
         double v = v_ptr[i];
-        if (v != undef_val && z >= 3 && z <= 7) {
-            v_filtered1.push_back(-v);
-            z_filtered1.push_back(-z);
+        if (v != undef_val && z >= min_z && z <= max_z) {
+            v_filtered1.push_back(v);
+            z_filtered1.push_back(z);
             v_steps.push_back(v);
             z_steps.push_back(z);
         }
@@ -53,6 +52,48 @@ py::tuple perform_calculation(
     );
 }
 
+int add(int i, int j) {
+    return i + j;
+}
+
+py::array_t<double> add_vec(int size) {
+    std::vector<double> first(size);
+    std::vector<double> second(size);
+
+    for (int i = 0; i < size; i++) {
+        first[i] = double(i);
+        second[i] = double(i) + 1.0;
+    }
+
+    for (int i = 0; i < second.size(); i++) {
+        second[i] += first[i];
+    }
+
+    py::array_t<double> result(second.size());
+    std::memcpy(result.mutable_data(), second.data(), second.size() * sizeof(double));
+    return result;
+}
+
+py::tuple add_vects(int size) {
+    py::array_t<double> first(size);
+    py::array_t<double> second(size);
+
+    auto first_buf = first.mutable_data();
+    auto second_buf = second.mutable_data();
+
+    for (size_t i = 0; i < size; i++) {
+        first_buf[i] = double(i);
+        second_buf[i] = double(i) + 1.0;
+    }
+
+    for (size_t i = 0; i < size; i++) {
+        second_buf[i] += first_buf[i];
+    }
+
+    return py::make_tuple(first, second);
+}
+
+
 PYBIND11_MODULE(example, m) {
     m.def("perform_calculation", &perform_calculation,
         py::arg("z_array"),
@@ -62,4 +103,10 @@ PYBIND11_MODULE(example, m) {
         py::arg("step"),
         py::arg("contrast"),
         py::arg("undef_val"));
+
+    m.def("add", &add, "A function that adds two numbers");
+
+    m.def("add_vec", &add_vec, "Add two vectors and return numpy array");
+
+    m.def("add_vects", &add_vects, "Return two numpy arrays after element-wise addition");
 }

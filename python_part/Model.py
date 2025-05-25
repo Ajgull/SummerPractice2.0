@@ -67,7 +67,7 @@ class Model:
             print(f'No data to calculate')
             return
 
-    def perform_calculation_pybind(self, min_z, max_z, contrast, step, undef_val):
+    def perform_calculation2(self, min_z, max_z, contrast, step, undef_val):
         print(f'perform calculation pybind')
         self.undefined_value = undef_val
         if self.data_frame is not None and not self.data_frame.empty:
@@ -76,14 +76,16 @@ class Model:
             z_array = input_data[:, 0]
             v_array = input_data[:, 1]
 
-            print(z_array, v_array)
-            print('\n')
             z_filtered, v_filtered, z_steps, v_steps = example.perform_calculation(
                 z_array, v_array, min_z, max_z, step, contrast, self.undefined_value
             )
 
             self.result = (z_steps, v_steps)
-            print(z_steps, v_steps)
+
+            print(z_filtered)
+            print(v_filtered)
+            print(z_steps)
+            print(v_steps)
             return z_filtered, v_filtered, z_steps, v_steps
         else:
             print(f'No data to calculate')

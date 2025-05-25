@@ -39,7 +39,7 @@ df = pd.DataFrame({
 })
 
 processor = DataProcessor(df)
-v_f, z_f, x_s, z_s = processor.perform_calculation_pybind(2, 8, contrast=1, step=0.5, undef_val=-999.25)
+v_f, z_f, x_s, z_s = processor.perform_calculation_pybind(1, 9, contrast=1, step=0.5, undef_val=-999.25)
 
 plt.figure(figsize=(10, 6))
 
