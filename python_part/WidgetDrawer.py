@@ -3,7 +3,7 @@ from matplotlib.figure import Figure
 
 
 class MplCanvas(FigureCanvasQTAgg):
-    def __init__(self, parent=None, width=10, height=5, dpi=100):
+    def __init__(self, parent: object = None, width: int = 10, height: int = 5, dpi: int = 100) -> None:
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.ax = self.fig.add_subplot(111)
         super().__init__(self.fig)

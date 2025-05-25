@@ -1,10 +1,10 @@
-import pandas as pd
-import numpy as np
 import example
+import numpy as np
+import pandas as pd
 
 
 class Model:
-    def __init__(self):
+    def __init__(self) -> None:
         self.file_path = None
         self.current_excel = None  # объект ExcelFile
         self.sheet = None
@@ -17,28 +17,29 @@ class Model:
         self.statistics_std = None
         self.result = None
 
-    def load_excel(self, file_path):
+    def load_excel(self, file_path: str) -> list[str]:
         self.file_path = file_path
         self.current_excel = pd.ExcelFile(file_path)
         return self.current_excel.sheet_names
 
-    def select_sheet(self, sheet):
+    def select_sheet(self, sheet: str) -> list[str]:
         self.sheet = sheet
         df = pd.read_excel(self.current_excel, sheet_name=sheet, nrows=0)
         return df.columns.tolist()[2:]
 
-    def select_column(self, column):
+    def select_column(self, column: str) -> None:
         self.column = column
 
-    def import_data(self):
+    def import_data(self) -> None:
         if not self.file_path or not self.sheet or not self.column:
-            print("File, sheet or column not chosen")
+            print('File, sheet or column not chosen')
             return
         df = pd.read_excel(self.current_excel, sheet_name=self.sheet, usecols=[self.column, 'MD'])
         self.data_frame = df
 
-    def perform_calculation(self, min_z, max_z, contrast, step, undef_val):
-        print(f'perform calculation python')
+    def perform_calculation(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float) \
+            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        print('perform calculation python')
         self.undefined_value = undef_val
         if self.data_frame is not None and not self.data_frame.empty:
 
@@ -64,11 +65,12 @@ class Model:
 
             return z_data_filtered, v_data_filtered, z_steps, x_steps
         else:
-            print(f'No data to calculate')
+            print('No data to calculate')
             return
 
-    def perform_calculation2(self, min_z, max_z, contrast, step, undef_val):
-        print(f'perform calculation pybind2')
+    def perform_calculation2(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float) \
+            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        print('perform calculation pybind2')
         self.undefined_value = undef_val
         if self.data_frame is not None and not self.data_frame.empty:
             input_data = self.data_frame.iloc[:, :2].to_numpy(dtype=np.float64)
@@ -88,22 +90,23 @@ class Model:
             print(v_steps)
             return z_filtered, v_filtered, z_steps, v_steps
         else:
-            print(f'No data to calculate')
+            print('No data to calculate')
             return
 
-    def compute_statistics2(self):
+    def compute_statistics2(self) -> tuple[float, float, float, float]:
         if self.result is None:
-            print(f"No results to calculate statistics2")
+            print('No results to calculate statistics2')
             return
 
         z_steps = self.result[1]
 
-        self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std = example.calculate_statistics2(z_steps)
+        self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std = (
+            example.calculate_statistics2(z_steps))
         return self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std
 
-    def compute_statistics(self):
+    def compute_statistics(self) -> tuple[float, float, float, float]:
         if self.result is None:
-            print(f"No results to calculate statistics")
+            print('No results to calculate statistics')
             return
 
         z_steps = self.result[1]
@@ -115,9 +118,9 @@ class Model:
 
         return self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std
 
-    def save_to_file_xlsx(self, filename):
+    def save_to_file_xlsx(self, filename: str) -> None:
         if self.result is None:
-            print("No results to save")
+            print('No results to save')
             return
         x_steps, z_steps = self.result
         df_export = pd.DataFrame({

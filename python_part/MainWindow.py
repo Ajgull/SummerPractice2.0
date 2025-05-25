@@ -1,13 +1,13 @@
-import pandas as pd
+import matplotlib.pyplot as plt
 from PySide6.QtWidgets import QFileDialog, QMainWindow, QVBoxLayout
-from PySide6.QtCore import Qt
+
+from Model import Model
 from ui_window import Ui_MainWindow
 from WidgetDrawer import MplCanvas
-import matplotlib.pyplot as plt
-from Model import Model
+
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.original_line = None
@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.canvas)
 
-    def choose_file_name(self):
+    def choose_file_name(self) -> None:
         file, _ = QFileDialog.getOpenFileName(self, '', '', 'Excel Files (*.xlsx)')
         if not file:
             return
@@ -58,9 +58,9 @@ class MainWindow(QMainWindow):
         self.ui.CB_list_choose.blockSignals(False)
         self.combobox_list_choose_change()
 
-    def combobox_list_choose_change(self):
+    def combobox_list_choose_change(self) -> None:
         sheet = self.ui.CB_list_choose.currentText()
-        print(f"Chosen sheet {sheet}")
+        print(f'Chosen sheet {sheet}')
 
         columns = self.model.select_sheet(sheet)
 
@@ -71,17 +71,17 @@ class MainWindow(QMainWindow):
         self.ui.CB_data_choose.blockSignals(False)
         self.combobox_data_choose_change()
 
-    def combobox_data_choose_change(self):
+    def combobox_data_choose_change(self) -> None:
         column = self.ui.CB_data_choose.currentText()
-        print(f"Chosen column {column}")
+        print(f'Chosen column {column}')
         self.model.select_column(column)
 
-    def import_data(self):
-        print(f"Importing data")
+    def import_data(self) -> None:
+        print('Importing data')
         self.model.import_data()
         print(self.model.data_frame.head())
 
-    def calculate(self):
+    def calculate(self) -> None:
         v_data, z_data, x_steps, z_steps = self.model.perform_calculation2(
             self.ui.SB_Min_Z.value(),
             self.ui.SB_Max_Z.value(),
@@ -95,17 +95,17 @@ class MainWindow(QMainWindow):
         v_min, v_max, v_mean, v_std = self.model.compute_statistics2()
         self.preform_statistics(v_min, v_max, v_mean, v_std)
 
-    def preform_statistics(self, v_min, v_max, v_mean, v_std):
+    def preform_statistics(self, v_min: float, v_max: float, v_mean: float, v_std: float) -> None:
         self.ui.LB_Min_Val.setText(str(format(v_min, '.2f')))
         self.ui.LB_Max_Val.setText(str(format(v_max, '.2f')))
         self.ui.LB_Mean_Val.setText(str(format(v_mean, '.2f')))
         self.ui.LB_Std_Val.setText(str(format(v_std, '.2f')))
 
-    def export_data(self):
-        self.model.save_to_file_xlsx("Обработанные данные.xlsx")
+    def export_data(self) -> None:
+        self.model.save_to_file_xlsx('Обработанные данные.xlsx')
         print('Data export')
 
-    def plot_results(self, v_data, z_data, x_steps, z_steps):
+    def plot_results(self, v_data: float, z_data: float, x_steps: float, z_steps: float) -> None:
         ax = self.canvas.ax
         ax.clear()
 
@@ -130,49 +130,49 @@ class MainWindow(QMainWindow):
         ax.grid(True)
         ax.figure.canvas.draw()
 
-    def clear_all_graphs(self):
+    def clear_all_graphs(self) -> None:
         ax = self.canvas.ax
         ax.clear()
         ax.figure.canvas.draw()
         self.original_line = None
         self.step_line = None
 
-    def clear_step_graph(self):
+    def clear_step_graph(self) -> None:
         if self.step_line is not None:
             self.step_line.remove()
             self.step_line = None
             self.canvas.ax.figure.canvas.draw()
 
-    def remove_original_graph(self, checked: bool):
+    def remove_original_graph(self, checked: bool) -> None:
         if self.original_line is not None:
             self.original_line.set_visible(not checked)
             self.canvas.draw()
 
-    def remove_step_graph(self, checked: bool):
+    def remove_step_graph(self, checked: bool) -> None:
         if self.step_line is not None:
             self.step_line.set_visible(not checked)
             self.canvas.draw()
 
-    def contrast_changed(self, value):
+    def contrast_changed(self, value: int) -> None:
         print(f'Value of contrast {value}')
 
-    def step_val_changed(self, value):
+    def step_val_changed(self, value: int) -> None:
         print(f'Value of step {value}')
 
-    def max_z_changed(self, value):
+    def max_z_changed(self, value: int) -> None:
         print(f'Max z = {value}')
 
-    def min_z_changed(self, value):
+    def min_z_changed(self, value: int) -> None:
         print(f'Min z = {value}')
 
-    def text_changed(self, text):
+    def text_changed(self, text: str) -> None:
         print(f'Text changed {text}')
 
-    def text_edited(self, text):
+    def text_edited(self, text: str) -> None:
         print(f'Text edited {text}')
 
-    def return_pressed(self):
-        print(f'Enter was pressed')
+    def return_pressed(self) -> None:
+        print('Enter was pressed')
 
-    def undef_val_changed(self, value):
+    def undef_val_changed(self, value: int) -> None:
         print(f'Undefined value changed {value}')

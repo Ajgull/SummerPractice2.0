@@ -1,16 +1,17 @@
-import pandas as pd
-import numpy as np
 import example
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 
 class DataProcessor:
-    def __init__(self, df):
+    def __init__(self, df: pd.DataFrame) -> None:
         self.data_frame = df
         self.result = None
         self.undefined_value = -999.25
 
-    def perform_calculation_pybind(self, min_z, max_z, contrast, step, undef_val):
+    def perform_calculation_pybind(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float) \
+            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         self.undefined_value = undef_val
         if self.data_frame is not None and not self.data_frame.empty:
             input_data = self.data_frame.iloc[:, :2].to_numpy(dtype=np.float64)
@@ -30,7 +31,7 @@ class DataProcessor:
             print(v_steps)
             return z_filtered, v_filtered, z_steps, v_steps
         else:
-            print("No data to calculate")
+            print('No data to calculate')
 
 
 df = pd.DataFrame({

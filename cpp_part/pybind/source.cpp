@@ -36,8 +36,7 @@ py::tuple perform_calculation(
         return py::make_tuple(empty_array, empty_array, empty_array, empty_array);
     }
 
-    // Построение ступенчатого графика с шагом step
-    // Определяем количество шагов
+
     const double z_start = z_filtered.front();
     const double z_end = z_filtered.back();
     const size_t num_steps = static_cast<size_t>(std::ceil((z_end - z_start) / step)) + 1;
@@ -46,13 +45,11 @@ py::tuple perform_calculation(
     std::vector<double> v_steps(num_steps);
 
     size_t current_index = 0;
-    double last_valid_v = 0.0; // Для запоминания последнего валидного значения
 
-    for (size_t step_idx = 0; step_idx < num_steps; ++step_idx) {
-        const double z0 = z_start + step_idx * step;
-        const double z1 = z0 + step;
+    for (size_t step_idx = 0; step_idx < num_steps; step_idx++) {
+        double z0 = z_start + step_idx * step;
+        double z1 = z0 + step;
 
-        // Подсчет суммы и количества элементов в сегменте
         double sum = 0.0;
         size_t count = 0;
 
@@ -62,17 +59,21 @@ py::tuple perform_calculation(
             current_index++;
         }
 
-        // Расчет среднего значения
         if (count > 0) {
-            last_valid_v = sum / count;
-            v_steps[step_idx] = last_valid_v;
+            v_steps[step_idx] = sum / count;
         }
         else {
-            v_steps[step_idx] = (step_idx > 0) ? v_steps[step_idx - 1] : 0.0;
+            if (step_idx > 0) { // не первое значение
+                v_steps[step_idx] = v_steps[step_idx - 1];
+            }
+            else { // первое значение
+                v_steps[step_idx] = 0.0;
+            }
         }
 
         z_steps[step_idx] = z0;
     }
+
 
     py::array_t<double> v_result(v_filtered.size());
     py::array_t<double> z_result(z_filtered.size());
@@ -95,36 +96,37 @@ py::tuple perform_calculation(
 py::tuple calculate_statistics(py::array_t<double> arr) {
     auto buf = arr.request();
 
-    if (buf.ndim != 1)
-        throw std::runtime_error("Input array must be 1D");
-
     double* ptr = static_cast<double*>(buf.ptr);
     size_t n = buf.size;
 
-    if (n == 0)
-        throw std::runtime_error("Input array is empty");
+    if (n == 0) {
+        return py::make_tuple(0.0, 0.0, 0.0, 0.0);
+    }
 
     double min_val = std::numeric_limits<double>::max();
     double max_val = std::numeric_limits<double>::lowest();
     double sum = 0.0;
 
-    // Вычисляем минимум, максимум и сумму
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; i++) {
         double val = ptr[i];
-        if (val < min_val) min_val = val;
-        if (val > max_val) max_val = val;
+        if (val < min_val) {
+            min_val = val;
+        }
+        if (val > max_val) {
+            max_val = val;
+        }
         sum += val;
     }
 
     double mean = sum / n;
 
     // Вычисляем стандартное отклонение
-    double sq_diff_sum = 0.0;
-    for (size_t i = 0; i < n; ++i) {
+    double diff_sum = 0.0;
+    for (size_t i = 0; i < n; i++) {
         double diff = ptr[i] - mean;
-        sq_diff_sum += diff * diff;
+        diff_sum += diff * diff;
     }
-    double stddev = std::sqrt(sq_diff_sum / n);
+    double stddev = std::sqrt(diff_sum / n);
 
     return py::make_tuple(min_val, max_val, mean, stddev);
 }
@@ -181,11 +183,11 @@ PYBIND11_MODULE(example, m) {
         py::arg("contrast"),
         py::arg("undef_val"));
 
-    m.def("calculate_statistics2", &calculate_statistics, "Calculate min, max, mean and stddev of a 1D numpy array");
+    m.def("calculate_statistics2", &calculate_statistics);
 
-    m.def("add", &add, "A function that adds two numbers");
+    m.def("add", &add);
 
-    m.def("add_vec", &add_vec, "Add two vectors and return numpy array");
+    m.def("add_vec", &add_vec);
 
-    m.def("add_vects", &add_vects, "Return two numpy arrays after element-wise addition");
+    m.def("add_vects", &add_vects);
 }
