@@ -80,10 +80,11 @@ py::tuple perform_calculation(
     py::array_t<double> v_steps_result(v_steps.size());
     py::array_t<double> z_steps_result(z_steps.size());
 
-    std::memcpy(v_result.mutable_data(), v_filtered.data(), v_filtered.size() * sizeof(double));
-    std::memcpy(z_result.mutable_data(), z_filtered.data(), z_filtered.size() * sizeof(double));
-    std::memcpy(v_steps_result.mutable_data(), v_steps.data(), v_steps.size() * sizeof(double));
-    std::memcpy(z_steps_result.mutable_data(), z_steps.data(), z_steps.size() * sizeof(double));
+    std::copy(v_filtered.begin(), v_filtered.end(), v_result.mutable_data());
+    std::copy(z_filtered.begin(), z_filtered.end(), z_result.mutable_data());
+    std::copy(v_steps.begin(), v_steps.end(), v_steps_result.mutable_data());
+    std::copy(z_steps.begin(), z_steps.end(), z_steps_result.mutable_data());
+
 
     return py::make_tuple(
         z_result,
@@ -120,7 +121,6 @@ py::tuple calculate_statistics(py::array_t<double> arr) {
 
     double mean = sum / n;
 
-    // Вычисляем стандартное отклонение
     double diff_sum = 0.0;
     for (size_t i = 0; i < n; i++) {
         double diff = ptr[i] - mean;
