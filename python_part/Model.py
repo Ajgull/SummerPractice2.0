@@ -73,39 +73,64 @@ class Model:
         print('perform calculation python')
         self.undefined_value = undef_val
         if self.data_frame is not None and not self.data_frame.empty:
-
             z_data = self.data_frame.iloc[:, 0].to_numpy()
             v_data = self.data_frame.iloc[:, 1].to_numpy()
+            valid_mask = (v_data != undef_val) & (z_data >= min_z) & (z_data <= max_z)
+            z_filtered = z_data[valid_mask]
+            v_filtered = v_data[valid_mask]
 
-            valid_data = (v_data != self.undefined_value)
-            z_data_filtered = z_data[valid_data]
-            v_data_filtered = v_data[valid_data]
-
-            range_data = (z_data_filtered >= min_z) & (z_data_filtered <= max_z)
-            z_data_filtered = z_data_filtered[range_data]
-            v_data_filtered = v_data_filtered[range_data]
-
-            if len(z_data_filtered) == 0:
+            if len(z_filtered) == 0:
                 return np.array([]), np.array([]), np.array([]), np.array([])
 
-            z_start = z_data_filtered[0]
-            z_end = z_data_filtered[-1]
+            z_start = z_filtered[0]
+            z_end = z_filtered[-1]
 
-            z_steps = np.arange(z_start, z_end + step, step)
+            # Инициализация ступеней с дублированием начальной точки
+            z_steps = [z_start, z_start]
+            v_steps = [v_filtered[0], v_filtered[0]]
 
-            x_steps = np.interp(z_steps, z_data_filtered, v_data_filtered)
+            current_index = 0
+            current_z = z_start
+            last_v = v_filtered[0]
+            current_step = step
 
-            x_steps = np.insert(x_steps, 0, v_data_filtered[0])
-            x_steps = np.append(x_steps, v_data_filtered[-1])
+            while current_z < z_end and current_index < len(z_filtered):
+                target_z = min(current_z + current_step, z_end)
+                sum_v = 0.0
+                count = 0
+                temp_index = current_index
 
-            z_steps = np.insert(z_steps, 0, z_data_filtered[0])
-            z_steps = np.append(z_steps, z_data_filtered[-1])
+                # Сбор данных в интервале [current_z, target_z)
+                while temp_index < len(z_filtered) and z_filtered[temp_index] < target_z:
+                    sum_v += v_filtered[temp_index]
+                    count += 1
+                    temp_index += 1
 
-            self.result = (x_steps, z_steps)
+                if count > 0:
+                    avg_v = sum_v / count
+                    ratio = avg_v / last_v if last_v != 0 else float('inf')
 
-            print(z_data_filtered, v_data_filtered)
+                    if (ratio >= contrast) or (ratio <= 1 / contrast) or (target_z >= z_end):
+                        z_steps.extend([current_z, target_z])  # Точки перехода
+                        v_steps.extend([avg_v, avg_v])  # Старое и новое значение
+                        current_z = target_z
+                        last_v = avg_v
+                        current_step = step  # Сброс шага
+                    else:
+                        current_step += 1.0  # Увеличиваем шаг
+                else:
+                    z_steps.extend([current_z, target_z])
+                    v_steps.extend([last_v, last_v])
+                    current_z = target_z
 
-            return z_data_filtered, v_data_filtered, z_steps, x_steps
+                current_index = temp_index
+
+            z_steps.append(z_filtered[-1])
+            v_steps.append(v_filtered[-1])
+
+            self.result = (z_steps, v_steps)
+
+            return np.array(z_filtered), np.array(v_filtered), np.array(z_steps), np.array(v_steps)
         else:
             print('No data to calculate')
             return np.array([]), np.array([]), np.array([]), np.array([])

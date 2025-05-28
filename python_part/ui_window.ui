@@ -290,14 +290,8 @@
                </widget>
               </item>
               <item>
-               <widget class="QSpinBox" name="SB_Contrast">
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>100000</number>
-                </property>
-                <property name="value">
+               <widget class="QDoubleSpinBox" name="SB_Contrast">
+                <property name="decimals">
                  <number>2</number>
                 </property>
                </widget>

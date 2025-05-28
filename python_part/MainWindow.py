@@ -83,7 +83,7 @@ class MainWindow(QMainWindow):
         print(self.model.data_frame.head())
 
     def calculate(self) -> None:
-        v_data, z_data, x_steps, z_steps = self.model.perform_calculation2(
+        v_data, z_data, x_steps, z_steps = self.model.perform_calculation1(
             self.ui.SB_Min_Z.value(),
             self.ui.SB_Max_Z.value(),
             self.ui.SB_Contrast.value(),
