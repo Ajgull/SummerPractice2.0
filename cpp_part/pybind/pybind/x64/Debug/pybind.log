@@ -1,2 +1,4 @@
-﻿  pybind.cpp
-  pybind.vcxproj -> C:\VS_Code_projects\pybind\x64\Debug\pybind.exe
+﻿  source.cpp
+     Creating library C:\Python_projects\PracticeProject\cpp_part\pybind\x64\Debug\pybind.lib and object C:\Python_projects\PracticeProject\cpp_part\pybind\x64\Debug\pybind.exp
+MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)
+C:\Python_projects\PracticeProject\cpp_part\pybind\x64\Debug\pybind.exe : fatal error LNK1120: 1 unresolved externals

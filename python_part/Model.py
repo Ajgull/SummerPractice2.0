@@ -66,7 +66,49 @@ class Model:
             return z_data_filtered, v_data_filtered, z_steps, x_steps
         else:
             print('No data to calculate')
-            return
+            return np.array([]), np.array([]), np.array([]), np.array([])
+
+    def perform_calculation1(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float) \
+            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        print('perform calculation python')
+        self.undefined_value = undef_val
+        if self.data_frame is not None and not self.data_frame.empty:
+
+            z_data = self.data_frame.iloc[:, 0].to_numpy()
+            v_data = self.data_frame.iloc[:, 1].to_numpy()
+
+            valid_data = (v_data != self.undefined_value)
+            z_data_filtered = z_data[valid_data]
+            v_data_filtered = v_data[valid_data]
+
+            range_data = (z_data_filtered >= min_z) & (z_data_filtered <= max_z)
+            z_data_filtered = z_data_filtered[range_data]
+            v_data_filtered = v_data_filtered[range_data]
+
+            if len(z_data_filtered) == 0:
+                return np.array([]), np.array([]), np.array([]), np.array([])
+
+            z_start = z_data_filtered[0]
+            z_end = z_data_filtered[-1]
+
+            z_steps = np.arange(z_start, z_end + step, step)
+
+            x_steps = np.interp(z_steps, z_data_filtered, v_data_filtered)
+
+            x_steps = np.insert(x_steps, 0, v_data_filtered[0])
+            x_steps = np.append(x_steps, v_data_filtered[-1])
+
+            z_steps = np.insert(z_steps, 0, z_data_filtered[0])
+            z_steps = np.append(z_steps, z_data_filtered[-1])
+
+            self.result = (x_steps, z_steps)
+
+            print(z_data_filtered, v_data_filtered)
+
+            return z_data_filtered, v_data_filtered, z_steps, x_steps
+        else:
+            print('No data to calculate')
+            return np.array([]), np.array([]), np.array([]), np.array([])
 
     def perform_calculation2(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float) \
             -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -91,7 +133,7 @@ class Model:
             return z_filtered, v_filtered, z_steps, v_steps
         else:
             print('No data to calculate')
-            return
+            return np.array([]), np.array([]), np.array([]), np.array([])
 
     def compute_statistics2(self) -> tuple[float, float, float, float]:
         if self.result is None:
@@ -109,7 +151,7 @@ class Model:
             print('No results to calculate statistics')
             return
 
-        z_steps = self.result[1]
+        z_steps = self.result[0]
 
         self.statistics_min = np.min(z_steps)
         self.statistics_max = np.max(z_steps)

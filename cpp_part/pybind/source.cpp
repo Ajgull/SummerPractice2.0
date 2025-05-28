@@ -41,10 +41,11 @@ py::tuple perform_calculation(
     const double z_end = z_filtered.back();
     const size_t num_steps = static_cast<size_t>(std::ceil((z_end - z_start) / step)) + 1;
 
-    std::vector<double> z_steps(num_steps);
-    std::vector<double> v_steps(num_steps);
+    std::vector<double> z_steps(2 * num_steps);
+    std::vector<double> v_steps(2 * num_steps);
 
     size_t current_index = 0;
+    double v_val = 0.0;
 
     for (size_t step_idx = 0; step_idx < num_steps; step_idx++) {
         double z0 = z_start + step_idx * step;
@@ -60,19 +61,25 @@ py::tuple perform_calculation(
         }
 
         if (count > 0) {
-            v_steps[step_idx] = sum / count;
+            v_val = sum / count;
         }
-        else {
-            if (step_idx > 0) { // не первое значение
-                v_steps[step_idx] = v_steps[step_idx - 1];
-            }
-            else { // первое значение
-                v_steps[step_idx] = 0.0;
-            }
+        else if (step_idx > 0) { // не первое значение
+            v_val = v_steps[2 * step_idx - 1];
         }
 
-        z_steps[step_idx] = z0;
+        z_steps[2 * step_idx] = z0;
+        v_steps[2 * step_idx] = v_val;
+
+        z_steps[2 * step_idx + 1] = z1;
+        v_steps[2 * step_idx + 1] = v_val;
     }
+
+    v_steps.pop_back();
+    z_steps.pop_back();
+
+    z_steps.insert(z_steps.begin(), z_filtered.front());
+    v_steps.insert(v_steps.begin(), v_filtered.front());
+
 
 
     py::array_t<double> v_result(v_filtered.size());

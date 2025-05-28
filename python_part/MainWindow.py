@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QFileDialog, QMainWindow, QVBoxLayout
 from Model import Model
 from ui_window import Ui_MainWindow
 from WidgetDrawer import MplCanvas
+import numpy as np
 
 
 class MainWindow(QMainWindow):
@@ -105,7 +106,7 @@ class MainWindow(QMainWindow):
         self.model.save_to_file_xlsx('Обработанные данные.xlsx')
         print('Data export')
 
-    def plot_results(self, v_data: float, z_data: float, x_steps: float, z_steps: float) -> None:
+    def plot_results(self, v_data: np.ndarray, z_data: np.ndarray, x_steps: np.ndarray, z_steps: np.ndarray) -> None:
         ax = self.canvas.ax
         ax.clear()
 
@@ -114,7 +115,7 @@ class MainWindow(QMainWindow):
         mask = (v_data >= self.ui.SB_Min_Z.value()) & (v_data <= self.ui.SB_Max_Z.value())
         ax.invert_yaxis()
         self.original_line = ax.plot(z_data[mask], v_data[mask], 'b-', label='Original graph')[0]
-        self.step_line = ax.step(z_steps, x_steps, 'r-', where='post', label='Step graph')[0]
+        self.step_line = ax.plot(z_steps, x_steps, 'r-', label='Step graph')[0]
         ax.set_ylabel('Z')
         ax.spines['bottom'].set_visible(False)
         ax.xaxis.set_visible(False)
