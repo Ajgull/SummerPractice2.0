@@ -39,71 +39,160 @@ py::tuple perform_calculation(
     const double z_start = z_filtered.front();
     const double z_end = z_filtered.back();
 
-    std::vector<double> z_steps, v_steps;
+    std::vector<double> z_steps;
+    std::vector<double> v_steps;
 
     z_steps.push_back(z_start);
     v_steps.push_back(v_filtered.front());
 
-    size_t current_index = 0; // индекс в исходных данных
+    size_t current_index = 0;
     double current_z = z_start;
     double last_v = v_filtered.front();
+    double current_step = step;
 
-    double best_z = 0.0;
-    double best_v = 0.0;
+    while (current_z < z_end && current_index < z_filtered.size()) {
+        double target_z = std::min(current_z + current_step, z_end);
+        double sum = 0.0;
+        size_t count = 0;
+        size_t temp_index = current_index;
 
-    while (current_z < z_end) {
-        best_z = current_z;
-        best_v = last_v;
-
-        // Ищем подходящий шаг с контрастностью
-        for (double test_z = current_z; test_z <= z_end; ) {
-            double sum = 0.0;
-            size_t count = 0;
-
-            size_t temp_index = current_index;
-            while (temp_index < z_filtered.size() && z_filtered[temp_index] < test_z) {
-                sum += v_filtered[temp_index];
-                count++;
-                temp_index++;
-            }
-
-            if (count > 0) {
-                double avg_v = sum / count;
-                if (last_v != 0 && avg_v != 0) {
-                    double ratio = avg_v / last_v;
-                    if (ratio <= contrast || ratio >= 1.0 / contrast) {
-                        best_z = test_z;
-                        best_v = avg_v;
-                        current_index = temp_index; // обновляем индекс, чтобы не считать эти точки повторно
-                        z_steps.push_back(current_z);
-                        v_steps.push_back(last_v);
-
-                        z_steps.push_back(current_z);
-                        v_steps.push_back(best_v);
-                        test_z += step;
-                        break;
-                    }
-                    else {
-                        test_z += 1.0;
-                    }
-                }
-            }
-
+        while (temp_index < z_filtered.size() && z_filtered[temp_index] < target_z) {
+            sum += v_filtered[temp_index];
+            count++;
+            temp_index++;
         }
 
+        if (count > 0) {
+            double avg_v = sum / count;
+            double ratio = (last_v != 0) ? avg_v / last_v : std::numeric_limits<double>::infinity();
 
-        current_z = best_z;
-        last_v = best_v;
-        best_z += step;
+            if (ratio >= contrast || ratio <= 1.0 / contrast || target_z >= z_end) {
+                z_steps.push_back(current_z);
+                v_steps.push_back(avg_v);
+                z_steps.push_back(target_z);
+                v_steps.push_back(avg_v);
+
+                current_z = target_z;
+                last_v = avg_v;
+                current_step = step; // сброс шага
+            }
+            else {
+                current_step += 1.0; // увеличиваем шаг
+            }
+        }
+        else {
+            // Нет данных в интервале — продолжаем текущий уровень с дублированием точек
+            z_steps.push_back(current_z);
+            v_steps.push_back(last_v);
+            z_steps.push_back(target_z);
+            v_steps.push_back(last_v);
+
+            current_z = target_z;
+        }
+
+        current_index = temp_index;
     }
 
-    if (z_steps.empty() || z_steps.back() < z_end) {
-        z_steps.push_back(z_end);
-        v_steps.push_back(last_v);
+    z_steps.push_back(z_end);
+    v_steps.push_back(v_filtered.back());
 
-        z_steps.push_back(z_end);
-        v_steps.push_back(v_filtered.back());
+    py::array_t<double> v_result(v_filtered.size());
+    py::array_t<double> z_result(z_filtered.size());
+    py::array_t<double> v_steps_result(v_steps.size());
+    py::array_t<double> z_steps_result(z_steps.size());
+
+    std::copy(v_filtered.begin(), v_filtered.end(), v_result.mutable_data());
+    std::copy(z_filtered.begin(), z_filtered.end(), z_result.mutable_data());
+    std::copy(v_steps.begin(), v_steps.end(), v_steps_result.mutable_data());
+    std::copy(z_steps.begin(), z_steps.end(), z_steps_result.mutable_data());
+
+    return py::make_tuple(
+        z_result,
+        v_result,
+        z_steps_result,
+        v_steps_result
+    );
+}
+
+
+
+py::tuple perform_calculation_no_contrast(
+    py::array_t<double> z_array,
+    py::array_t<double> v_array,
+    double min_z,
+    double max_z,
+    double step,
+    double contrast,
+    double undef_val)
+{
+    auto v_buf = v_array.request();
+    auto z_buf = z_array.request();
+
+    double* v_ptr = static_cast<double*>(v_buf.ptr);
+    double* z_ptr = static_cast<double*>(z_buf.ptr);
+    size_t n = v_buf.size;
+
+    std::vector<double> v_filtered, z_filtered;
+
+    for (size_t i = 0; i < n; i++) {
+        double z = z_ptr[i];
+        double v = v_ptr[i];
+        if (v != undef_val && z >= min_z && z <= max_z) {
+            v_filtered.push_back(v);
+            z_filtered.push_back(z);
+        }
     }
+
+    if (z_filtered.empty() || v_filtered.empty()) {
+        py::array_t<double> empty_array(0);
+        return py::make_tuple(empty_array, empty_array, empty_array, empty_array);
+    }
+
+
+    const double z_start = z_filtered.front();
+    const double z_end = z_filtered.back();
+    const size_t num_steps = static_cast<size_t>(std::ceil((z_end - z_start) / step)) + 1;
+
+    std::vector<double> z_steps(2 * num_steps);
+    std::vector<double> v_steps(2 * num_steps);
+
+    size_t current_index = 0;
+    double v_val = 0.0;
+
+    for (size_t step_idx = 0; step_idx < num_steps; step_idx++) {
+        double z0 = z_start + step_idx * step;
+        double z1 = z0 + step;
+
+        double sum = 0.0;
+        size_t count = 0;
+
+        while (current_index < z_filtered.size() && z_filtered[current_index] < z1) {
+            sum += v_filtered[current_index];
+            count++;
+            current_index++;
+        }
+
+        if (count > 0) {
+            v_val = sum / count;
+        }
+        else if (step_idx > 0) { // не первое значение
+            v_val = v_steps[2 * step_idx - 1];
+        }
+
+        z_steps[2 * step_idx] = z0;
+        v_steps[2 * step_idx] = v_val;
+
+        z_steps[2 * step_idx + 1] = z1;
+        v_steps[2 * step_idx + 1] = v_val;
+    }
+
+    v_steps.pop_back();
+    z_steps.pop_back();
+
+    z_steps.insert(z_steps.begin(), z_filtered.front());
+    v_steps.insert(v_steps.begin(), v_filtered.front());
+
+
 
     py::array_t<double> v_result(v_filtered.size());
     py::array_t<double> z_result(z_filtered.size());
@@ -124,13 +213,13 @@ py::tuple perform_calculation(
     );
 }
 
-py::tuple perform_calculation_no_contrast(
+py::tuple perform_calculation_no_contrast_iter(
     py::array_t<double> z_array,
     py::array_t<double> v_array,
     double min_z,
     double max_z,
-    double step,       // шаг теперь в индексах, например 1, 2, 3...
-    double contrast,   // параметр contrast можно игнорировать, т.к. функция без контрастности
+    double step,
+    double contrast,
     double undef_val)
 {
     auto v_buf = v_array.request();
@@ -142,7 +231,6 @@ py::tuple perform_calculation_no_contrast(
 
     std::vector<double> v_filtered, z_filtered;
 
-    // Фильтрация по undef_val и диапазону z
     for (size_t i = 0; i < n; i++) {
         double z = z_ptr[i];
         double v = v_ptr[i];
@@ -159,13 +247,11 @@ py::tuple perform_calculation_no_contrast(
 
     size_t filtered_size = z_filtered.size();
 
-    // Количество шагов по индексам с шагом step
     size_t num_steps = (filtered_size + static_cast<size_t>(step) - 1) / static_cast<size_t>(step);
 
     std::vector<double> z_steps;
     std::vector<double> v_steps;
 
-    // Формируем ступенчатые точки с повторением для горизонтальных и вертикальных сегментов
     for (size_t i = 0; i < num_steps; i++) {
         size_t idx = i * static_cast<size_t>(step);
         if (idx >= filtered_size) {
@@ -175,23 +261,19 @@ py::tuple perform_calculation_no_contrast(
         double z_val = z_filtered[idx];
         double v_val = v_filtered[idx];
 
-        // Для первой точки просто добавляем
         if (i == 0) {
             z_steps.push_back(z_val);
             v_steps.push_back(v_val);
         }
         else {
-            // Горизонтальный сегмент: z меняется, v фиксирован (предыдущее значение)
             z_steps.push_back(z_val);
             v_steps.push_back(v_steps.back());
 
-            // Вертикальный сегмент: z фиксирован, v меняется на новое значение
             z_steps.push_back(z_val);
             v_steps.push_back(v_val);
         }
     }
 
-    // Добавляем последнюю точку, если она не совпадает с последней добавленной
     if (z_steps.back() < z_filtered.back()) {
         z_steps.push_back(z_filtered.back());
         v_steps.push_back(v_steps.back());
@@ -217,10 +299,6 @@ py::tuple perform_calculation_no_contrast(
         v_steps_result
     );
 }
-
-
-
-
 
 py::tuple calculate_statistics(py::array_t<double> arr) {
     auto buf = arr.request();
@@ -312,6 +390,15 @@ PYBIND11_MODULE(example, m) {
         py::arg("undef_val"));
 
     m.def("perform_calculation2", &perform_calculation_no_contrast,
+        py::arg("z_array"),
+        py::arg("v_array"),
+        py::arg("min_z"),
+        py::arg("max_z"),
+        py::arg("step"),
+        py::arg("contrast"),
+        py::arg("undef_val"));
+
+    m.def("perform_calculation3", &perform_calculation_no_contrast_iter,
         py::arg("z_array"),
         py::arg("v_array"),
         py::arg("min_z"),
