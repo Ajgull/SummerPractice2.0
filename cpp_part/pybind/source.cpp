@@ -21,7 +21,6 @@ py::tuple perform_calculation(
     size_t n = v_buf.size;
 
     std::vector<double> v_filtered, z_filtered;
-
     for (size_t i = 0; i < n; i++) {
         double z = z_ptr[i];
         double v = v_ptr[i];
@@ -48,49 +47,58 @@ py::tuple perform_calculation(
     size_t current_index = 0;
     double current_z = z_start;
     double last_v = v_filtered.front();
-    double current_step = step;
+
+    double initial_step = step;
+    double current_step = initial_step;
 
     while (current_z < z_end && current_index < z_filtered.size()) {
         double target_z = std::min(current_z + current_step, z_end);
-        double sum = 0.0;
+
+        double sum_v = 0.0;
         size_t count = 0;
         size_t temp_index = current_index;
 
         while (temp_index < z_filtered.size() && z_filtered[temp_index] < target_z) {
-            sum += v_filtered[temp_index];
+            sum_v += v_filtered[temp_index];
             count++;
             temp_index++;
         }
 
-        if (count > 0) {
-            double avg_v = sum / count;
-            double ratio = (last_v != 0) ? avg_v / last_v : std::numeric_limits<double>::infinity();
-
-            if (ratio >= contrast || ratio <= 1.0 / contrast || target_z >= z_end) {
-                z_steps.push_back(current_z);
-                v_steps.push_back(avg_v);
-                z_steps.push_back(target_z);
-                v_steps.push_back(avg_v);
-
-                current_z = target_z;
-                last_v = avg_v;
-                current_step = step; // сброс шага
-            }
-            else {
-                current_step += 1.0; // увеличиваем шаг
-            }
-        }
-        else {
-            // Нет данных в интервале — продолжаем текущий уровень с дублированием точек
+        if (count == 0) {
             z_steps.push_back(current_z);
-            v_steps.push_back(last_v);
             z_steps.push_back(target_z);
             v_steps.push_back(last_v);
-
+            v_steps.push_back(last_v);
             current_z = target_z;
+            current_index = temp_index;
+            current_step = initial_step;
+            continue;
         }
 
-        current_index = temp_index;
+        double avg_v = sum_v / count;
+        double ratio = (last_v != 0.0) ? (avg_v / last_v) : std::numeric_limits<double>::infinity();
+
+        if (target_z >= z_end) {
+            z_steps.push_back(current_z);
+            z_steps.push_back(target_z);
+            v_steps.push_back(avg_v);
+            v_steps.push_back(avg_v);
+            break;
+        }
+
+        if (ratio <= (1.0 / contrast) || ratio >= contrast) {
+            z_steps.push_back(current_z);
+            z_steps.push_back(target_z);
+            v_steps.push_back(avg_v);
+            v_steps.push_back(avg_v);
+            current_z = target_z;
+            last_v = avg_v;
+            current_step = initial_step;
+            current_index = temp_index;
+        }
+        else {
+            current_step += 1.0;
+        }
     }
 
     z_steps.push_back(z_end);

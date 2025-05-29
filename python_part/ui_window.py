@@ -197,7 +197,7 @@ class Ui_MainWindow(object):
 
         self.SB_Contrast = QDoubleSpinBox(self.horizontalLayoutWidget_4)
         self.SB_Contrast.setObjectName(u"SB_Contrast")
-        self.SB_Contrast.setDecimals(2)
+        self.SB_Contrast.setDecimals(5)
 
         self.verticalLayout_6.addWidget(self.SB_Contrast)
 

@@ -292,7 +292,7 @@
               <item>
                <widget class="QDoubleSpinBox" name="SB_Contrast">
                 <property name="decimals">
-                 <number>2</number>
+                 <number>5</number>
                 </property>
                </widget>
               </item>

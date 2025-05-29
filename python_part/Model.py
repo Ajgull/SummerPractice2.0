@@ -101,13 +101,12 @@ class Model:
                 count = 0
                 temp_index = current_index
 
-                # данные в интервале [current_z, target_z)
                 while temp_index < len(z_filtered) and z_filtered[temp_index] < target_z:
                     sum_v += v_filtered[temp_index]
                     count += 1
                     temp_index += 1
 
-                if count == 0:  # Нет данных в интервале — просто продвигаемся
+                if count == 0:
                     z_steps.extend([current_z, target_z])
                     v_steps.extend([last_v, last_v])
                     current_z = target_z
@@ -124,7 +123,7 @@ class Model:
                     v_steps.extend([avg_v, avg_v])
                     break
 
-                if ratio <= 1 / contrast:
+                if ratio <= 1 / contrast or ratio >= contrast:
                     z_steps.extend([current_z, target_z])
                     v_steps.extend([avg_v, avg_v])
                     current_z = target_z
