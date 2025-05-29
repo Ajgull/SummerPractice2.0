@@ -85,45 +85,54 @@ class Model:
             z_start = z_filtered[0]
             z_end = z_filtered[-1]
 
-            # Инициализация ступеней с дублированием начальной точки
-            z_steps = [z_start, z_start]
-            v_steps = [v_filtered[0], v_filtered[0]]
+            z_steps = [z_start]
+            v_steps = [v_filtered[0]]
 
             current_index = 0
             current_z = z_start
             last_v = v_filtered[0]
-            current_step = step
+            initial_step = step
+            current_step = initial_step
 
             while current_z < z_end and current_index < len(z_filtered):
                 target_z = min(current_z + current_step, z_end)
+
                 sum_v = 0.0
                 count = 0
                 temp_index = current_index
 
-                # Сбор данных в интервале [current_z, target_z)
+                # данные в интервале [current_z, target_z)
                 while temp_index < len(z_filtered) and z_filtered[temp_index] < target_z:
                     sum_v += v_filtered[temp_index]
                     count += 1
                     temp_index += 1
 
-                if count > 0:
-                    avg_v = sum_v / count
-                    ratio = avg_v / last_v if last_v != 0 else float('inf')
-
-                    if (ratio >= contrast) or (ratio <= 1 / contrast) or (target_z >= z_end):
-                        z_steps.extend([current_z, target_z])  # Точки перехода
-                        v_steps.extend([avg_v, avg_v])  # Старое и новое значение
-                        current_z = target_z
-                        last_v = avg_v
-                        current_step = step  # Сброс шага
-                    else:
-                        current_step += 1.0  # Увеличиваем шаг
-                else:
+                if count == 0:  # Нет данных в интервале — просто продвигаемся
                     z_steps.extend([current_z, target_z])
                     v_steps.extend([last_v, last_v])
                     current_z = target_z
+                    current_index = temp_index
+                    current_step = initial_step
+                    continue
 
-                current_index = temp_index
+                avg_v = sum_v / count
+                ratio = avg_v / last_v if last_v != 0 else float('inf')
+                print(ratio, current_step)
+
+                if target_z >= z_end:
+                    z_steps.extend([current_z, target_z])
+                    v_steps.extend([avg_v, avg_v])
+                    break
+
+                if ratio <= 1 / contrast:
+                    z_steps.extend([current_z, target_z])
+                    v_steps.extend([avg_v, avg_v])
+                    current_z = target_z
+                    last_v = avg_v
+                    current_step = initial_step
+                    current_index = temp_index
+                else:
+                    current_step += 1.0
 
             z_steps.append(z_filtered[-1])
             v_steps.append(v_filtered[-1])
