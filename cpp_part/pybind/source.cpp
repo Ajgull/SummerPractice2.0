@@ -1,8 +1,25 @@
 #include <vector>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <algorithm>
 
 namespace py = pybind11;
+
+std::vector<double> norm_data(std::vector<double>& data, int min_v, int max_v) {
+    if (min_v == max_v) {
+        return data;
+    }
+    else {
+        double min_v_val = *std::min_element(begin(data), end(data));
+        double max_v_val = *std::max_element(begin(data), end(data));
+
+
+        for (size_t i = 0; i < data.size(); i++) {
+            data[i] = (data[i] - min_v_val) / (max_v_val - min_v_val) * (max_v - min_v) + min_v;
+        }
+        return data;
+    }
+}
 
 py::tuple perform_calculation(
     py::array_t<double> z_array,
@@ -11,7 +28,9 @@ py::tuple perform_calculation(
     double max_z,
     double step,
     double contrast,
-    double undef_val)
+    double undef_val,
+    int new_min,
+    int new_max)
 {
     auto v_buf = v_array.request();
     auto z_buf = z_array.request();
@@ -35,14 +54,13 @@ py::tuple perform_calculation(
         return py::make_tuple(empty_array, empty_array, empty_array, empty_array);
     }
 
+    v_filtered = norm_data(v_filtered, new_min, new_max);
+
     const double z_start = z_filtered.front();
     const double z_end = z_filtered.back();
 
     std::vector<double> z_steps;
     std::vector<double> v_steps;
-
-    z_steps.push_back(z_start);
-    v_steps.push_back(v_filtered.front());
 
     size_t current_index = 0;
     double current_z = z_start;
@@ -76,7 +94,14 @@ py::tuple perform_calculation(
         }
 
         double avg_v = sum_v / count;
-        double ratio = (last_v != 0.0) ? (avg_v / last_v) : std::numeric_limits<double>::infinity();
+        double contrast_val;
+
+        if (last_v != 0) {
+            contrast_val = avg_v / last_v;
+        }
+        else {
+            contrast_val = std::numeric_limits<double>::infinity();
+        }
 
         if (target_z >= z_end) {
             z_steps.push_back(current_z);
@@ -86,7 +111,7 @@ py::tuple perform_calculation(
             break;
         }
 
-        if (ratio <= (1.0 / contrast) || ratio >= contrast) {
+        if (contrast_val <= (1.0 / contrast) || contrast_val >= contrast) {
             z_steps.push_back(current_z);
             z_steps.push_back(target_z);
             v_steps.push_back(avg_v);
@@ -131,7 +156,9 @@ py::tuple perform_calculation_no_contrast(
     double max_z,
     double step,
     double contrast,
-    double undef_val)
+    double undef_val,
+    int new_min,
+    int new_max)
 {
     auto v_buf = v_array.request();
     auto z_buf = z_array.request();
@@ -228,7 +255,9 @@ py::tuple perform_calculation_no_contrast_iter(
     double max_z,
     double step,
     double contrast,
-    double undef_val)
+    double undef_val,
+    int new_min,
+    int new_max)
 {
     auto v_buf = v_array.request();
     auto z_buf = z_array.request();
@@ -395,7 +424,9 @@ PYBIND11_MODULE(example, m) {
         py::arg("max_z"),
         py::arg("step"),
         py::arg("contrast"),
-        py::arg("undef_val"));
+        py::arg("undef_val"),
+        py::arg("new_min"), 
+        py::arg("new_max"));
 
     m.def("perform_calculation2", &perform_calculation_no_contrast,
         py::arg("z_array"),
@@ -404,7 +435,9 @@ PYBIND11_MODULE(example, m) {
         py::arg("max_z"),
         py::arg("step"),
         py::arg("contrast"),
-        py::arg("undef_val"));
+        py::arg("undef_val"),
+        py::arg("new_min"),
+        py::arg("new_max"));
 
     m.def("perform_calculation3", &perform_calculation_no_contrast_iter,
         py::arg("z_array"),
@@ -413,7 +446,9 @@ PYBIND11_MODULE(example, m) {
         py::arg("max_z"),
         py::arg("step"),
         py::arg("contrast"),
-        py::arg("undef_val"));
+        py::arg("undef_val"),
+        py::arg("new_min"),
+        py::arg("new_max"));
 
     m.def("calculate_statistics2", &calculate_statistics);
 

@@ -11,6 +11,8 @@ class Model:
         self.column = None
         self.data_frame = None
         self.undefined_value = None
+        self.new_min = None
+        self.new_max = None
         self.statistics_min = None
         self.statistics_max = None
         self.statistics_mean = None
@@ -37,16 +39,35 @@ class Model:
         df = pd.read_excel(self.current_excel, sheet_name=self.sheet, usecols=[self.column, 'MD'])
         self.data_frame = df
 
-    def perform_calculation(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float) \
+    def _norm_data(self, data: np.array, mask: np.array) -> np.array:
+        print(f'normalizing data')
+
+        if self.new_min == self.new_max:
+            return data.copy()
+
+        v_norm_data = data.copy()
+        if np.any(mask):
+            v_min = data[mask].min()
+            v_max = data[mask].max()
+
+            v_norm_data[mask] = (data[mask] - v_min) / (v_max - v_min) * (self.new_max - self.new_min) + self.new_min
+        return v_norm_data
+
+    def perform_calculation(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float,
+                            new_min: int, new_max: int) \
             -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         print('perform calculation python')
         self.undefined_value = undef_val
+        self.new_min = new_min
+        self.new_max = new_max
         if self.data_frame is not None and not self.data_frame.empty:
 
             z_data = self.data_frame.iloc[:, 0].to_numpy()
             v_data = self.data_frame.iloc[:, 1].to_numpy()
 
             valid_data = (v_data != self.undefined_value)
+
+            v_data = self._norm_data(v_data, valid_data)  # нормировка данных
 
             z_data_filtered = z_data[valid_data]
             v_data_filtered = v_data[valid_data]
@@ -68,14 +89,22 @@ class Model:
             print('No data to calculate')
             return np.array([]), np.array([]), np.array([]), np.array([])
 
-    def perform_calculation1(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float) \
+
+    def perform_calculation1(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float,
+                             new_min: int, new_max: int) \
             -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         print('perform calculation python')
         self.undefined_value = undef_val
+        self.new_min = new_min
+        self.new_max = new_max
         if self.data_frame is not None and not self.data_frame.empty:
             z_data = self.data_frame.iloc[:, 0].to_numpy()
             v_data = self.data_frame.iloc[:, 1].to_numpy()
+
             valid_mask = (v_data != undef_val) & (z_data >= min_z) & (z_data <= max_z)
+
+            v_data = self._norm_data(v_data, valid_mask) # нормировка данных
+
             z_filtered = z_data[valid_mask]
             v_filtered = v_data[valid_mask]
 
@@ -85,8 +114,8 @@ class Model:
             z_start = z_filtered[0]
             z_end = z_filtered[-1]
 
-            z_steps = [z_start]
-            v_steps = [v_filtered[0]]
+            z_steps = []
+            v_steps = []
 
             current_index = 0
             current_z = z_start
@@ -133,9 +162,6 @@ class Model:
                 else:
                     current_step += 1.0
 
-            z_steps.append(z_filtered[-1])
-            v_steps.append(v_filtered[-1])
-
             self.result = (z_steps, v_steps)
 
             return np.array(z_filtered), np.array(v_filtered), np.array(z_steps), np.array(v_steps)
@@ -143,10 +169,15 @@ class Model:
             print('No data to calculate')
             return np.array([]), np.array([]), np.array([]), np.array([])
 
-    def perform_calculation2(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float) \
+    def perform_calculation2(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float,
+                             new_min: int, new_max: int) \
             -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         print('perform calculation pybind2')
+
         self.undefined_value = undef_val
+        self.new_min = new_min
+        self.new_max = new_max
+
         if self.data_frame is not None and not self.data_frame.empty:
             input_data = self.data_frame.iloc[:, :2].to_numpy(dtype=np.float64)
 
@@ -154,7 +185,7 @@ class Model:
             v_array = input_data[:, 1]
 
             z_filtered, v_filtered, z_steps, v_steps = example.perform_calculation(
-                z_array, v_array, min_z, max_z, step, contrast, self.undefined_value
+                z_array, v_array, min_z, max_z, step, contrast, self.undefined_value, self.new_min, self.new_max
             )
 
             self.result = (z_steps, v_steps)
@@ -171,7 +202,7 @@ class Model:
     def compute_statistics2(self) -> tuple[float, float, float, float]:
         if self.result is None:
             print('No results to calculate statistics2')
-            return
+            return 0.0, 0.0, 0.0, 0.0
 
         z_steps = self.result[1]
 
@@ -182,7 +213,7 @@ class Model:
     def compute_statistics(self) -> tuple[float, float, float, float]:
         if self.result is None:
             print('No results to calculate statistics')
-            return
+            return 0.0, 0.0, 0.0, 0.0
 
         z_steps = self.result[0]
 

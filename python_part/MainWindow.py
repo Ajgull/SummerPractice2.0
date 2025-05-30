@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from PySide6.QtWidgets import QFileDialog, QMainWindow, QVBoxLayout
 
 from Model import Model
 from ui_window import Ui_MainWindow
 from WidgetDrawer import MplCanvas
-import numpy as np
 
 
 class MainWindow(QMainWindow):
@@ -30,6 +30,8 @@ class MainWindow(QMainWindow):
         self.ui.SB_Max_Z.valueChanged.connect(self.max_z_changed)
         self.ui.SB_Min_Z.valueChanged.connect(self.min_z_changed)
         self.ui.SB_uv.valueChanged.connect(self.undef_val_changed)
+        self.ui.SB_Max_Norm.valueChanged.connect(self.norm_max_val_changed)
+        self.ui.SB_Min_Norm.valueChanged.connect(self.norm_min_val_changed)
 
         self.ui.CB_list_choose.currentIndexChanged.connect(self.combobox_list_choose_change)
         self.ui.CB_data_choose.currentIndexChanged.connect(self.combobox_data_choose_change)
@@ -83,12 +85,16 @@ class MainWindow(QMainWindow):
         print(self.model.data_frame.head())
 
     def calculate(self) -> None:
+        self.ui.CheckBox_Remove_Original.setChecked(False)
+        self.ui.CheckBox_Remove_Step.setChecked(False)
         v_data, z_data, x_steps, z_steps = self.model.perform_calculation1(
             self.ui.SB_Min_Z.value(),
             self.ui.SB_Max_Z.value(),
             self.ui.SB_Contrast.value(),
             self.ui.SB_Step.value(),
-            self.ui.SB_uv.value()
+            self.ui.SB_uv.value(),
+            self.ui.SB_Min_Norm.value(),
+            self.ui.SB_Max_Norm.value(),
         )
 
         self.plot_results(v_data, z_data, x_steps, z_steps)
@@ -153,6 +159,12 @@ class MainWindow(QMainWindow):
         if self.step_line is not None:
             self.step_line.set_visible(not checked)
             self.canvas.draw()
+
+    def norm_max_val_changed(self, value: int) -> None:
+        print(f'Value of max norm {value}')
+
+    def norm_min_val_changed(self, value: int) -> None:
+        print(f'Value of min norm {value}')
 
     def contrast_changed(self, value: int) -> None:
         print(f'Value of contrast {value}')

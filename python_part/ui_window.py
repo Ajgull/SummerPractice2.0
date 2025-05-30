@@ -25,8 +25,8 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(465, 547)
-        MainWindow.setMinimumSize(QSize(465, 516))
+        MainWindow.resize(465, 604)
+        MainWindow.setMinimumSize(QSize(465, 604))
         MainWindow.setBaseSize(QSize(450, 516))
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
@@ -133,14 +133,14 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_8.addLayout(self.horizontalLayout_5)
 
-        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout_8.addItem(self.verticalSpacer_3)
-
         self.PB_Import_Data = QPushButton(self.horizontalLayoutWidget_4)
         self.PB_Import_Data.setObjectName(u"PB_Import_Data")
 
         self.verticalLayout_8.addWidget(self.PB_Import_Data)
+
+        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_8.addItem(self.verticalSpacer_3)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -155,17 +155,32 @@ class Ui_MainWindow(object):
 
         self.LB_MaxZ = QLabel(self.horizontalLayoutWidget_4)
         self.LB_MaxZ.setObjectName(u"LB_MaxZ")
+        self.LB_MaxZ.setMinimumSize(QSize(0, 0))
         self.LB_MaxZ.setFrameShape(QFrame.Shape.Box)
         self.LB_MaxZ.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.verticalLayout_5.addWidget(self.LB_MaxZ)
 
-        self.LB_contrast = QLabel(self.horizontalLayoutWidget_4)
-        self.LB_contrast.setObjectName(u"LB_contrast")
-        self.LB_contrast.setFrameShape(QFrame.Shape.Box)
-        self.LB_contrast.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.LB_MinNorm = QLabel(self.horizontalLayoutWidget_4)
+        self.LB_MinNorm.setObjectName(u"LB_MinNorm")
+        self.LB_MinNorm.setFrameShape(QFrame.Shape.Box)
+        self.LB_MinNorm.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.verticalLayout_5.addWidget(self.LB_contrast)
+        self.verticalLayout_5.addWidget(self.LB_MinNorm)
+
+        self.LB_MaxNorm = QLabel(self.horizontalLayoutWidget_4)
+        self.LB_MaxNorm.setObjectName(u"LB_MaxNorm")
+        self.LB_MaxNorm.setFrameShape(QFrame.Shape.Box)
+        self.LB_MaxNorm.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.verticalLayout_5.addWidget(self.LB_MaxNorm)
+
+        self.LB_Contrast = QLabel(self.horizontalLayoutWidget_4)
+        self.LB_Contrast.setObjectName(u"LB_Contrast")
+        self.LB_Contrast.setFrameShape(QFrame.Shape.Box)
+        self.LB_Contrast.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.verticalLayout_5.addWidget(self.LB_Contrast)
 
         self.LB_Step = QLabel(self.horizontalLayoutWidget_4)
         self.LB_Step.setObjectName(u"LB_Step")
@@ -195,9 +210,22 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_6.addWidget(self.SB_Max_Z)
 
+        self.SB_Min_Norm = QSpinBox(self.horizontalLayoutWidget_4)
+        self.SB_Min_Norm.setObjectName(u"SB_Min_Norm")
+
+        self.verticalLayout_6.addWidget(self.SB_Min_Norm)
+
+        self.SB_Max_Norm = QSpinBox(self.horizontalLayoutWidget_4)
+        self.SB_Max_Norm.setObjectName(u"SB_Max_Norm")
+        self.SB_Max_Norm.setValue(0)
+
+        self.verticalLayout_6.addWidget(self.SB_Max_Norm)
+
         self.SB_Contrast = QDoubleSpinBox(self.horizontalLayoutWidget_4)
         self.SB_Contrast.setObjectName(u"SB_Contrast")
         self.SB_Contrast.setDecimals(5)
+        self.SB_Contrast.setSingleStep(0.010000000000000)
+        self.SB_Contrast.setValue(1.000000000000000)
 
         self.verticalLayout_6.addWidget(self.SB_Contrast)
 
@@ -215,6 +243,11 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_8.addLayout(self.horizontalLayout_2)
 
+        self.PB_Calculate = QPushButton(self.horizontalLayoutWidget_4)
+        self.PB_Calculate.setObjectName(u"PB_Calculate")
+
+        self.verticalLayout_8.addWidget(self.PB_Calculate)
+
         self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_8.addItem(self.verticalSpacer_2)
@@ -223,11 +256,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
         self.verticalLayout_11 = QVBoxLayout()
         self.verticalLayout_11.setObjectName(u"verticalLayout_11")
-        self.PB_Calculate = QPushButton(self.horizontalLayoutWidget_4)
-        self.PB_Calculate.setObjectName(u"PB_Calculate")
-
-        self.verticalLayout_11.addWidget(self.PB_Calculate)
-
         self.PB_Clear_All = QPushButton(self.horizontalLayoutWidget_4)
         self.PB_Clear_All.setObjectName(u"PB_Clear_All")
 
@@ -343,7 +371,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.addLayout(self.verticalLayout_8)
 
         self.horizontalLayout_4.setStretch(0, 3)
-        self.horizontalLayout_4.setStretch(1, 1)
         self.splitter.addWidget(self.horizontalLayoutWidget_4)
 
         self.gridLayout_4.addWidget(self.splitter, 0, 0, 1, 1)
@@ -366,7 +393,9 @@ class Ui_MainWindow(object):
         self.PB_Import_Data.setText(QCoreApplication.translate("MainWindow", u"import", None))
         self.LB_MinZ.setText(QCoreApplication.translate("MainWindow", u"min z", None))
         self.LB_MaxZ.setText(QCoreApplication.translate("MainWindow", u"max z", None))
-        self.LB_contrast.setText(QCoreApplication.translate("MainWindow", u"contrast", None))
+        self.LB_MinNorm.setText(QCoreApplication.translate("MainWindow", u"norm min", None))
+        self.LB_MaxNorm.setText(QCoreApplication.translate("MainWindow", u"norm max", None))
+        self.LB_Contrast.setText(QCoreApplication.translate("MainWindow", u"contrast", None))
         self.LB_Step.setText(QCoreApplication.translate("MainWindow", u"step", None))
         self.PB_Calculate.setText(QCoreApplication.translate("MainWindow", u"calculate", None))
         self.PB_Clear_All.setText(QCoreApplication.translate("MainWindow", u"clear all", None))
