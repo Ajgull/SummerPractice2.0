@@ -1,9 +1,9 @@
 import numpy as np
 from PySide6.QtWidgets import QFileDialog, QMainWindow, QVBoxLayout
 
-from Model import Model
+from model import Model
 from ui_window import Ui_MainWindow
-from WidgetDrawer import MplCanvas
+from widget_drawer import MplCanvas
 
 
 class MainWindow(QMainWindow):
@@ -47,7 +47,7 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.canvas)
 
-    def choose_file_name(self) -> None: # выбор файла для считывания данных и динамическое заполнение именами листов
+    def choose_file_name(self) -> None:  # выбор файла для считывания данных и динамическое заполнение именами листов
         file, _ = QFileDialog.getOpenFileName(self, '', '', 'Excel Files (*.xlsx)')
         if not file:
             return
@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         self.ui.CB_list_choose.blockSignals(False)
         self.combobox_list_choose_change()
 
-    def combobox_list_choose_change(self) -> None: # динамическое заполнение именами колонок и выбор листа
+    def combobox_list_choose_change(self) -> None:  # динамическое заполнение именами колонок и выбор листа
         sheet = self.ui.CB_list_choose.currentText()
         print(f'Chosen sheet {sheet}')
 
@@ -73,21 +73,21 @@ class MainWindow(QMainWindow):
         self.ui.CB_data_choose.blockSignals(False)
         self.combobox_data_choose_change()
 
-    def combobox_data_choose_change(self) -> None: # выбор колонки
+    def combobox_data_choose_change(self) -> None:  # выбор колонки
         column = self.ui.CB_data_choose.currentText()
         print(f'Chosen column {column}')
         self.model.select_column(column)
 
-    def import_data(self) -> None: # загрузка данных
+    def import_data(self) -> None:  # загрузка данных
         print('Importing data')
         self.model.import_data()
         if self.model.data_frame is not None:
             print(self.model.data_frame.head())
 
-    def calculate(self) -> None: # вычисления
+    def calculate(self) -> None:  # вычисления
         self.ui.CheckBox_Remove_Original.setChecked(False)
         self.ui.CheckBox_Remove_Step.setChecked(False)
-        v_data, z_data, x_steps, z_steps = self.model.perform_calculation1(
+        v_data, z_data, x_steps, z_steps = self.model.perform_calculation2(
             self.ui.SB_Min_Z.value(),
             self.ui.SB_Max_Z.value(),
             self.ui.SB_Contrast.value(),
@@ -99,7 +99,7 @@ class MainWindow(QMainWindow):
 
         self.plot_results(v_data, z_data, x_steps, z_steps)
 
-        v_min, v_max, v_mean, v_std = self.model.compute_statistics2() # подсчет статистики
+        v_min, v_max, v_mean, v_std = self.model.compute_statistics2()  # подсчет статистики
         self.perform_statistics(v_min, v_max, v_mean, v_std)
 
     def perform_statistics(self, v_min: float, v_max: float, v_mean: float, v_std: float) -> None:  # результаты

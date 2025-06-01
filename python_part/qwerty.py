@@ -68,8 +68,8 @@ class DataProcessor:
 
             self.result = (x_steps, z_steps)
 
-            print("Filtered z_data:", z_data_filtered)
-            print("Filtered v_data:", v_data_filtered)
+            print('Filtered z_data:', z_data_filtered)
+            print('Filtered v_data:', v_data_filtered)
 
             return z_data_filtered, v_data_filtered, z_steps, x_steps
         else:

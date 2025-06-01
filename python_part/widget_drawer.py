@@ -19,7 +19,7 @@ class MplCanvas(FigureCanvasQTAgg):
         self.ax.spines['left'].set_visible(True)
         self.ax.spines['top'].set_visible(True)
 
-        self.ax.yaxis.set_ticks_position('left') # Ось y слева
+        self.ax.yaxis.set_ticks_position('left')  # Ось y слева
 
         # дополнительная ось сверху
         self.ax_top = self.ax.twiny()

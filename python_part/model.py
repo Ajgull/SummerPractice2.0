@@ -29,18 +29,18 @@ class Model:
         df = pd.read_excel(self.current_excel, sheet_name=sheet, nrows=0)
         return df.columns.tolist()[2:]
 
-    def select_column(self, column: str) -> None: # выбор колонки
+    def select_column(self, column: str) -> None:  # выбор колонки
         self.column = column
 
-    def import_data(self) -> None: # импорт данных
+    def import_data(self) -> None:  # импорт данных
         if not self.file_path or not self.sheet or not self.column:
             print('File, sheet or column not chosen')
             return
         df = pd.read_excel(self.current_excel, sheet_name=self.sheet, usecols=[self.column, 'MD'])
         self.data_frame = df
 
-    def _norm_data(self, data: np.array, mask: np.array) -> np.array: # нормировка данных
-        print(f'normalizing data')
+    def _norm_data(self, data: np.array, mask: np.array) -> np.array:  # нормировка данных
+        print('normalizing data')
 
         if self.new_min == self.new_max:
             return data.copy()
@@ -55,7 +55,7 @@ class Model:
 
     def perform_calculation(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float,
                             new_min: int, new_max: int) \
-            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: # вычисления без контрастности с нормировкой, питон
+            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:  # вычисления без контрастности с нормировкой, питон
         print('perform calculation python')
         self.undefined_value = undef_val
         self.new_min = new_min
@@ -89,10 +89,9 @@ class Model:
             print('No data to calculate')
             return np.array([]), np.array([]), np.array([]), np.array([])
 
-
     def perform_calculation1(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float,
                              new_min: int, new_max: int) \
-            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: # вычисления с контрастностью и с нормировкой, питон
+            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:  # вычисления с контрастностью и с нормировкой, питон
         print('perform calculation python')
         self.undefined_value = undef_val
         self.new_min = new_min
@@ -103,7 +102,7 @@ class Model:
 
             valid_mask = (v_data != undef_val) & (z_data >= min_z) & (z_data <= max_z)
 
-            v_data = self._norm_data(v_data, valid_mask) # нормировка данных
+            v_data = self._norm_data(v_data, valid_mask)  # нормировка данных
 
             z_filtered = z_data[valid_mask]
             v_filtered = v_data[valid_mask]
@@ -171,7 +170,7 @@ class Model:
 
     def perform_calculation2(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float,
                              new_min: int, new_max: int) \
-            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: # вычисления с контрастностью и с нормировкой c++
+            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:  # вычисления с контрастностью и с нормировкой c++
         print('perform calculation pybind2')
 
         self.undefined_value = undef_val
@@ -199,7 +198,7 @@ class Model:
             print('No data to calculate')
             return np.array([]), np.array([]), np.array([]), np.array([])
 
-    def compute_statistics2(self) -> tuple[float, float, float, float]: # вычисления статистики c++
+    def compute_statistics2(self) -> tuple[float, float, float, float]:  # вычисления статистики c++
         if self.result is None:
             print('No results to calculate statistics2')
             return 0.0, 0.0, 0.0, 0.0
@@ -210,7 +209,7 @@ class Model:
             example.calculate_statistics2(z_steps))
         return self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std
 
-    def compute_statistics(self) -> tuple[float, float, float, float]: # вычисления статистики питон
+    def compute_statistics(self) -> tuple[float, float, float, float]:  # вычисления статистики питон
         if self.result is None:
             print('No results to calculate statistics')
             return 0.0, 0.0, 0.0, 0.0
@@ -224,7 +223,7 @@ class Model:
 
         return self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std
 
-    def save_to_file_xlsx(self, filename: str) -> None: # выгрузка данных
+    def save_to_file_xlsx(self, filename: str) -> None:  # выгрузка данных
         if self.result is None:
             print('No results to save')
             return
