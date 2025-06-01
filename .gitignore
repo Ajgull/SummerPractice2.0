@@ -8,3 +8,6 @@ python_part/venv
 venv
 .venv
 __pycache__/
+build/
+dist/
+*.spec
