@@ -8,18 +8,37 @@ class MplCanvas(FigureCanvasQTAgg):
         self.ax = self.fig.add_subplot(111)
         super().__init__(self.fig)
         self.setParent(parent)
+
         self.ax.invert_yaxis()
+
+        # скрываем нижнюю ось x и правую границу
         self.ax.spines['bottom'].set_visible(False)
         self.ax.spines['right'].set_visible(False)
 
+        # левые и верхние границы видимы
         self.ax.spines['left'].set_visible(True)
         self.ax.spines['top'].set_visible(True)
 
-        self.ax.yaxis.set_ticks_position('left')
-        self.ax.xaxis.set_ticks_position('top')
+        self.ax.yaxis.set_ticks_position('left') # Ось y слева
 
-        self.ax.xaxis.set_label_position('top')
-        self.ax.set_xlabel('V', fontsize=8)
+        # дополнительная ось сверху
+        self.ax_top = self.ax.twiny()
+
+        # Настраиваем верхнюю ось
+        self.ax_top.spines['top'].set_visible(True)
+        self.ax_top.spines['bottom'].set_visible(False)
+
+        # скрываем правую границу верхней оси дополнительной оси
+        self.ax_top.spines['right'].set_visible(False)
+        self.ax_top.yaxis.set_ticks_position('left')
+
+        self.ax_top.xaxis.set_ticks_position('top')
+        self.ax_top.xaxis.set_label_position('top')
+        self.ax_top.set_xlabel('V', fontsize=8)
+
+        # Скрываем нижнюю ось x основной оси
+        self.ax.xaxis.set_visible(False)
+
         self.ax.set_ylabel('Z', fontsize=8)
 
-        self.fig.subplots_adjust(left=0.25)
+        self.fig.subplots_adjust(left=0.25, top=0.85)

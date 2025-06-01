@@ -19,27 +19,27 @@ class Model:
         self.statistics_std = None
         self.result = None
 
-    def load_excel(self, file_path: str) -> list[str]:
+    def load_excel(self, file_path: str) -> list[str]:  # загрузка данных
         self.file_path = file_path
         self.current_excel = pd.ExcelFile(file_path)
         return self.current_excel.sheet_names
 
-    def select_sheet(self, sheet: str) -> list[str]:
+    def select_sheet(self, sheet: str) -> list[str]:  # выбор страницы в файле экселя
         self.sheet = sheet
         df = pd.read_excel(self.current_excel, sheet_name=sheet, nrows=0)
         return df.columns.tolist()[2:]
 
-    def select_column(self, column: str) -> None:
+    def select_column(self, column: str) -> None: # выбор колонки
         self.column = column
 
-    def import_data(self) -> None:
+    def import_data(self) -> None: # импорт данных
         if not self.file_path or not self.sheet or not self.column:
             print('File, sheet or column not chosen')
             return
         df = pd.read_excel(self.current_excel, sheet_name=self.sheet, usecols=[self.column, 'MD'])
         self.data_frame = df
 
-    def _norm_data(self, data: np.array, mask: np.array) -> np.array:
+    def _norm_data(self, data: np.array, mask: np.array) -> np.array: # нормировка данных
         print(f'normalizing data')
 
         if self.new_min == self.new_max:
@@ -55,7 +55,7 @@ class Model:
 
     def perform_calculation(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float,
                             new_min: int, new_max: int) \
-            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: # вычисления без контрастности с нормировкой, питон
         print('perform calculation python')
         self.undefined_value = undef_val
         self.new_min = new_min
@@ -92,7 +92,7 @@ class Model:
 
     def perform_calculation1(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float,
                              new_min: int, new_max: int) \
-            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: # вычисления с контрастностью и с нормировкой, питон
         print('perform calculation python')
         self.undefined_value = undef_val
         self.new_min = new_min
@@ -171,7 +171,7 @@ class Model:
 
     def perform_calculation2(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float,
                              new_min: int, new_max: int) \
-            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: # вычисления с контрастностью и с нормировкой c++
         print('perform calculation pybind2')
 
         self.undefined_value = undef_val
@@ -199,7 +199,7 @@ class Model:
             print('No data to calculate')
             return np.array([]), np.array([]), np.array([]), np.array([])
 
-    def compute_statistics2(self) -> tuple[float, float, float, float]:
+    def compute_statistics2(self) -> tuple[float, float, float, float]: # вычисления статистики c++
         if self.result is None:
             print('No results to calculate statistics2')
             return 0.0, 0.0, 0.0, 0.0
@@ -210,7 +210,7 @@ class Model:
             example.calculate_statistics2(z_steps))
         return self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std
 
-    def compute_statistics(self) -> tuple[float, float, float, float]:
+    def compute_statistics(self) -> tuple[float, float, float, float]: # вычисления статистики питон
         if self.result is None:
             print('No results to calculate statistics')
             return 0.0, 0.0, 0.0, 0.0
@@ -224,7 +224,7 @@ class Model:
 
         return self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std
 
-    def save_to_file_xlsx(self, filename: str) -> None:
+    def save_to_file_xlsx(self, filename: str) -> None: # выгрузка данных
         if self.result is None:
             print('No results to save')
             return

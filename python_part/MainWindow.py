@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 from PySide6.QtWidgets import QFileDialog, QMainWindow, QVBoxLayout
 
@@ -48,7 +47,7 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.canvas)
 
-    def choose_file_name(self) -> None:
+    def choose_file_name(self) -> None: # выбор файла для считывания данных и динамическое заполнение именами листов
         file, _ = QFileDialog.getOpenFileName(self, '', '', 'Excel Files (*.xlsx)')
         if not file:
             return
@@ -61,7 +60,7 @@ class MainWindow(QMainWindow):
         self.ui.CB_list_choose.blockSignals(False)
         self.combobox_list_choose_change()
 
-    def combobox_list_choose_change(self) -> None:
+    def combobox_list_choose_change(self) -> None: # динамическое заполнение именами колонок и выбор листа
         sheet = self.ui.CB_list_choose.currentText()
         print(f'Chosen sheet {sheet}')
 
@@ -74,17 +73,18 @@ class MainWindow(QMainWindow):
         self.ui.CB_data_choose.blockSignals(False)
         self.combobox_data_choose_change()
 
-    def combobox_data_choose_change(self) -> None:
+    def combobox_data_choose_change(self) -> None: # выбор колонки
         column = self.ui.CB_data_choose.currentText()
         print(f'Chosen column {column}')
         self.model.select_column(column)
 
-    def import_data(self) -> None:
+    def import_data(self) -> None: # загрузка данных
         print('Importing data')
         self.model.import_data()
-        print(self.model.data_frame.head())
+        if self.model.data_frame is not None:
+            print(self.model.data_frame.head())
 
-    def calculate(self) -> None:
+    def calculate(self) -> None: # вычисления
         self.ui.CheckBox_Remove_Original.setChecked(False)
         self.ui.CheckBox_Remove_Step.setChecked(False)
         v_data, z_data, x_steps, z_steps = self.model.perform_calculation1(
@@ -99,63 +99,84 @@ class MainWindow(QMainWindow):
 
         self.plot_results(v_data, z_data, x_steps, z_steps)
 
-        v_min, v_max, v_mean, v_std = self.model.compute_statistics2()
-        self.preform_statistics(v_min, v_max, v_mean, v_std)
+        v_min, v_max, v_mean, v_std = self.model.compute_statistics2() # подсчет статистики
+        self.perform_statistics(v_min, v_max, v_mean, v_std)
 
-    def preform_statistics(self, v_min: float, v_max: float, v_mean: float, v_std: float) -> None:
+    def perform_statistics(self, v_min: float, v_max: float, v_mean: float, v_std: float) -> None:  # результаты
         self.ui.LB_Min_Val.setText(str(format(v_min, '.2f')))
         self.ui.LB_Max_Val.setText(str(format(v_max, '.2f')))
         self.ui.LB_Mean_Val.setText(str(format(v_mean, '.2f')))
         self.ui.LB_Std_Val.setText(str(format(v_std, '.2f')))
 
-    def export_data(self) -> None:
+    def export_data(self) -> None:  # выгрузка данных
         self.model.save_to_file_xlsx('Обработанные данные.xlsx')
         print('Data export')
 
-    def plot_results(self, v_data: np.ndarray, z_data: np.ndarray, x_steps: np.ndarray, z_steps: np.ndarray) -> None:
+    def plot_results(self, v_data: np.ndarray, z_data: np.ndarray, x_steps: np.ndarray, z_steps: np.ndarray) -> None:  # построение графика
         ax = self.canvas.ax
-        ax.clear()
+        ax_top = self.canvas.ax_top
 
-        plt.rcParams.update({'font.size': 8})
+        # Очищаем содержимое обеих осей
+        ax.cla()
+        ax_top.cla()
 
-        mask = (v_data >= self.ui.SB_Min_Z.value()) & (v_data <= self.ui.SB_Max_Z.value())
+        # Инвертируем ось y заново после очистки
         ax.invert_yaxis()
-        self.original_line = ax.plot(z_data[mask], v_data[mask], 'b-', label='Original graph')[0]
-        self.step_line = ax.plot(z_steps, x_steps, 'r-', label='Step graph')[0]
-        ax.set_ylabel('Z')
+
+        # Скрываем нижнюю ось x и правую границу основной оси
         ax.spines['bottom'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(True)
+        ax.spines['top'].set_visible(True)
+
+        # Восстанавливаем подписи и положение осей
+        ax.set_ylabel('Z', fontsize=8)
         ax.xaxis.set_visible(False)
+        ax.yaxis.set_ticks_position('left')
 
-        self.canvas.fig.subplots_adjust(left=0.3)
+        # Строим графики на основной оси
+        self.original_line = ax.plot(z_data, v_data, 'b-', label='Original graph')[0]
+        self.step_line = ax.plot(z_steps, x_steps, 'r-', label='Step graph')[0]
 
-        ax_top = ax.twiny()
-        ax_top.set_xlim(ax.get_xlim())
-        ax_top.set_xlabel('V')
+        # Настраиваем верхнюю ось
+        ax_top.spines['top'].set_visible(True)
+        ax_top.spines['bottom'].set_visible(False)
+        ax_top.xaxis.set_ticks_position('top')
         ax_top.xaxis.set_label_position('top')
-        ax_top.xaxis.tick_top()
+        ax_top.set_xlabel('V', fontsize=8)
+
+        # Устанавливаем одинаковые пределы по X для обеих осей
+        ax_top.set_xlim(ax.get_xlim())
+
+        # Легенда и сетка на основной оси
         ax.legend(loc='lower right')
         ax.grid(True)
-        ax.figure.canvas.draw()
 
-    def clear_all_graphs(self) -> None:
+        # Отступы
+        self.canvas.fig.subplots_adjust(left=0.25, top=0.85)
+
+        # Обновляем холст
+        self.canvas.fig.canvas.draw_idle()
+
+    def clear_all_graphs(self) -> None:  # удаляет все графики
         ax = self.canvas.ax
         ax.clear()
         ax.figure.canvas.draw()
         self.original_line = None
         self.step_line = None
 
-    def clear_step_graph(self) -> None:
+    def clear_step_graph(self) -> None:  # удаляет ступенчатый график
         if self.step_line is not None:
             self.step_line.remove()
             self.step_line = None
             self.canvas.ax.figure.canvas.draw()
 
-    def remove_original_graph(self, checked: bool) -> None:
+    def remove_original_graph(self, checked: bool) -> None:  # скрывает исходный график
         if self.original_line is not None:
             self.original_line.set_visible(not checked)
             self.canvas.draw()
 
-    def remove_step_graph(self, checked: bool) -> None:
+    def remove_step_graph(self, checked: bool) -> None:  # скрывает ступенчатый график
         if self.step_line is not None:
             self.step_line.set_visible(not checked)
             self.canvas.draw()
