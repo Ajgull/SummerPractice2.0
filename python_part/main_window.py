@@ -22,7 +22,6 @@ class MainWindow(QMainWindow):
         self.ui.PB_Calculate.clicked.connect(self.calculate)
         self.ui.PB_Export.clicked.connect(self.export_data)
         self.ui.PB_Clear_All.clicked.connect(self.clear_all_graphs)
-        # self.ui.PB_Clear_Step.clicked.connect(self.clear_step_graph)
 
         self.ui.SB_Contrast.valueChanged.connect(self.contrast_changed)
         self.ui.SB_Step.valueChanged.connect(self.step_val_changed)
@@ -37,6 +36,10 @@ class MainWindow(QMainWindow):
 
         self.ui.CheckBox_Remove_Original.toggled.connect(self.remove_original_graph)
         self.ui.CheckBox_Remove_Step.toggled.connect(self.remove_step_graph)
+        self.ui.cb_use_normalization.toggled.connect(self.use_normalization)
+
+        self.ui.SB_Min_Norm.setDisabled(True)
+        self.ui.SB_Max_Norm.setDisabled(True)
 
         self.ui.lineEdit_data.textChanged.connect(self.text_changed)
         self.ui.lineEdit_data.textEdited.connect(self.text_edited)
@@ -83,6 +86,9 @@ class MainWindow(QMainWindow):
         self.model.import_data()
         if self.model.data_frame is not None:
             print(self.model.data_frame.head())
+
+        self.set_min_z()
+        self.set_max_z()
 
     def calculate(self) -> None:  # вычисления
         self.ui.CheckBox_Remove_Original.setChecked(False)
@@ -139,7 +145,7 @@ class MainWindow(QMainWindow):
         ax.spines['top'].set_visible(True)
 
         # Восстанавливаем подписи и положение осей
-        ax.set_ylabel('Z', fontsize=8)
+        ax.set_ylabel('Z, м', fontsize=8)
         ax.xaxis.set_visible(False)
         ax.yaxis.set_ticks_position('left')
 
@@ -152,7 +158,7 @@ class MainWindow(QMainWindow):
         ax_top.spines['bottom'].set_visible(False)
         ax_top.xaxis.set_ticks_position('top')
         ax_top.xaxis.set_label_position('top')
-        ax_top.set_xlabel('V', fontsize=8)
+        ax_top.set_xlabel('V, Ом * м', fontsize=8)
 
         # Устанавливаем одинаковые пределы по X для обеих осей
         ax_top.set_xlim(ax.get_xlim())
@@ -162,7 +168,7 @@ class MainWindow(QMainWindow):
         ax.grid(True)
 
         # Отступы
-        self.canvas.fig.subplots_adjust(left=0.25, top=0.85)
+        self.canvas.fig.subplots_adjust(left=0.3, top=0.89)
 
         # Обновляем холст
         self.canvas.fig.canvas.draw_idle()
@@ -181,6 +187,14 @@ class MainWindow(QMainWindow):
     #         self.step_line = None
     #         self.canvas.ax.figure.canvas.draw()
 
+    def use_normalization(self, checked: bool) -> None:
+        if checked:
+            self.ui.SB_Min_Norm.setEnabled(True)
+            self.ui.SB_Max_Norm.setEnabled(True)
+        else:
+            self.ui.SB_Min_Norm.setValue(0)
+            self.ui.SB_Max_Norm.setValue(0)
+
     def remove_original_graph(self, checked: bool) -> None:  # скрывает исходный график
         if self.original_line is not None:
             self.original_line.set_visible(not checked)
@@ -190,6 +204,16 @@ class MainWindow(QMainWindow):
         if self.step_line is not None:
             self.step_line.set_visible(not checked)
             self.canvas.draw()
+
+    def set_min_z(self):
+        self.ui.SB_Min_Z.setMinimum(int(self.model.min_z))
+        self.ui.SB_Min_Z.setValue(int(self.model.min_z))
+        print(f'Min z {self.model.min_z}')
+
+    def set_max_z(self):
+        self.ui.SB_Max_Z.setMaximum(int(self.model.max_z))
+        self.ui.SB_Max_Z.setValue(int(self.model.max_z))
+        print(f'Max z {self.model.max_z}')
 
     def norm_max_val_changed(self, value: int) -> None:
         print(f'Value of max norm {value}')

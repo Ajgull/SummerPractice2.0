@@ -10,6 +10,8 @@ class Model:
         self.sheet = None
         self.column = None
         self.data_frame = None
+        self.min_z = None
+        self.max_z = None
         self.undefined_value = None
         self.new_min = None
         self.new_max = None
@@ -38,6 +40,10 @@ class Model:
             return
         df = pd.read_excel(self.current_excel, sheet_name=self.sheet, usecols=[self.column, 'MD'])
         self.data_frame = df
+
+        self.min_z = self.data_frame.iloc[:, 0].min()
+        self.max_z = self.data_frame.iloc[:, 0].max()
+        print(self.min_z, self.max_z)
 
     def _norm_data(self, data: np.array, mask: np.array) -> np.array:  # нормировка данных
         print('normalizing data')
@@ -211,18 +217,18 @@ class Model:
             print('No results to calculate statistics2')
             return 0.0, 0.0, 0.0, 0.0
 
-        #z_steps = self.result[1]
+        # z_steps = self.result[1]
 
         self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std = (
             example.calculate_statistics2(z_steps))
         return self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std
 
-    def compute_statistics(self) -> tuple[float, float, float, float]:  # вычисления статистики питон
+    def compute_statistics(self, z_steps: np.array) -> tuple[float, float, float, float]:  # вычисления статистики питон
         if self.result is None:
             print('No results to calculate statistics')
             return 0.0, 0.0, 0.0, 0.0
 
-        z_steps = self.result[0]
+        # z_steps = self.result[0]
 
         self.statistics_min = np.min(z_steps)
         self.statistics_max = np.max(z_steps)

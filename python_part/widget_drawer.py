@@ -34,11 +34,11 @@ class MplCanvas(FigureCanvasQTAgg):
 
         self.ax_top.xaxis.set_ticks_position('top')
         self.ax_top.xaxis.set_label_position('top')
-        self.ax_top.set_xlabel('V', fontsize=8)
+        self.ax_top.set_xlabel('V, Ом * м', fontsize=8)
 
         # Скрываем нижнюю ось x основной оси
         self.ax.xaxis.set_visible(False)
 
-        self.ax.set_ylabel('Z', fontsize=8)
+        self.ax.set_ylabel('Z, м', fontsize=8)
 
-        self.fig.subplots_adjust(left=0.25, top=0.85)
+        self.fig.subplots_adjust(left=0.25, top=0.89)

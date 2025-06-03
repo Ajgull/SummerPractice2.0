@@ -297,7 +297,6 @@ class Ui_MainWindow(object):
         self.SB_Min_Z.setMaximumSize(QSize(16777215, 20))
         self.SB_Min_Z.setMinimum(1)
         self.SB_Min_Z.setMaximum(100000)
-        self.SB_Min_Z.setValue(1100)
 
         self.verticalLayout_32.addWidget(self.SB_Min_Z)
 
@@ -306,7 +305,7 @@ class Ui_MainWindow(object):
         self.SB_Max_Z.setMaximumSize(QSize(16777215, 20))
         self.SB_Max_Z.setMinimum(1)
         self.SB_Max_Z.setMaximum(100000)
-        self.SB_Max_Z.setValue(1500)
+        self.SB_Max_Z.setValue(1)
 
         self.verticalLayout_32.addWidget(self.SB_Max_Z)
 
@@ -540,7 +539,7 @@ class Ui_MainWindow(object):
         self.PB_Export.setText(QCoreApplication.translate("MainWindow", u"export", None))
         self.CheckBox_Remove_Step.setText(QCoreApplication.translate("MainWindow", u"remove step", None))
         self.CheckBox_Remove_Original.setText(QCoreApplication.translate("MainWindow", u"remove original", None))
-        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"ststistics", None))
+        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"statistics", None))
         self.groupBox1.setTitle(QCoreApplication.translate("MainWindow", u"values", None))
         self.LB_Min.setText(QCoreApplication.translate("MainWindow", u"min", None))
         self.LB_Max.setText(QCoreApplication.translate("MainWindow", u"max", None))
