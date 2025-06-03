@@ -124,9 +124,6 @@ class Model:
             z_steps = []
             v_steps = []
 
-            z_steps.append(z_start)
-            v_steps.append(v_filtered[0])
-
             current_index = 0
             current_z = z_start
             last_v = v_filtered[0]
@@ -145,7 +142,7 @@ class Model:
                     count += 1
                     temp_index += 1
 
-                if count == 0:
+                if count == 0 or current_index == 0:
                     z_steps.extend([current_z, target_z])
                     v_steps.extend([last_v, last_v])
                     current_z = target_z

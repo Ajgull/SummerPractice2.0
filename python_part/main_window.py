@@ -180,13 +180,6 @@ class MainWindow(QMainWindow):
         self.original_line = None
         self.step_line = None
 
-    # такой кнопки больше нет
-    # def clear_step_graph(self) -> None:  # удаляет ступенчатый график
-    #     if self.step_line is not None:
-    #         self.step_line.remove()
-    #         self.step_line = None
-    #         self.canvas.ax.figure.canvas.draw()
-
     def use_normalization(self, checked: bool) -> None:
         if checked:
             self.ui.SB_Min_Norm.setEnabled(True)
