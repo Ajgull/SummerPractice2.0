@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
         self.ui.PB_Calculate.clicked.connect(self.calculate)
         self.ui.PB_Export.clicked.connect(self.export_data)
         self.ui.PB_Clear_All.clicked.connect(self.clear_all_graphs)
-        self.ui.PB_Clear_Step.clicked.connect(self.clear_step_graph)
+        # self.ui.PB_Clear_Step.clicked.connect(self.clear_step_graph)
 
         self.ui.SB_Contrast.valueChanged.connect(self.contrast_changed)
         self.ui.SB_Step.valueChanged.connect(self.step_val_changed)
@@ -87,7 +87,7 @@ class MainWindow(QMainWindow):
     def calculate(self) -> None:  # вычисления
         self.ui.CheckBox_Remove_Original.setChecked(False)
         self.ui.CheckBox_Remove_Step.setChecked(False)
-        v_data, z_data, x_steps, z_steps = self.model.perform_calculation2(
+        v_data, z_data, x_steps, z_steps = self.model.perform_calculation1(
             self.ui.SB_Min_Z.value(),
             self.ui.SB_Max_Z.value(),
             self.ui.SB_Contrast.value(),
@@ -99,14 +99,23 @@ class MainWindow(QMainWindow):
 
         self.plot_results(v_data, z_data, x_steps, z_steps)
 
-        v_min, v_max, v_mean, v_std = self.model.compute_statistics2()  # подсчет статистики
-        self.perform_statistics(v_min, v_max, v_mean, v_std)
+        v_step_min, v_step_max, v_step_mean, v_step_std = self.model.compute_statistics2(z_steps)  # подсчет статистики
+        self.perform_step_statistics(v_step_min, v_step_max, v_step_mean, v_step_std)
 
-    def perform_statistics(self, v_min: float, v_max: float, v_mean: float, v_std: float) -> None:  # результаты
-        self.ui.LB_Min_Val.setText(str(format(v_min, '.2f')))
-        self.ui.LB_Max_Val.setText(str(format(v_max, '.2f')))
-        self.ui.LB_Mean_Val.setText(str(format(v_mean, '.2f')))
-        self.ui.LB_Std_Val.setText(str(format(v_std, '.2f')))
+        v_orig_min, v_orig_max, v_orig_mean, v_orig_std = self.model.compute_statistics2(z_data)  # подсчет статистики
+        self.perform_orig_statistics(v_orig_min, v_orig_max, v_orig_mean, v_orig_std)
+
+    def perform_step_statistics(self, v_min: float, v_max: float, v_mean: float, v_std: float) -> None:  # результаты ступенчатого графика
+        self.ui.lb_step_min_val.setText(str(format(v_min, '.2f')))
+        self.ui.lb_step_max_val.setText(str(format(v_max, '.2f')))
+        self.ui.lb_step_mean_val.setText(str(format(v_mean, '.2f')))
+        self.ui.lb_step_std_val.setText(str(format(v_std, '.2f')))
+
+    def perform_orig_statistics(self, v_min: float, v_max: float, v_mean: float, v_std: float) -> None:  # результаты ступенчатого графика
+        self.ui.lb_orig_min_val.setText(str(format(v_min, '.2f')))
+        self.ui.lb_orig_max_val.setText(str(format(v_max, '.2f')))
+        self.ui.lb_orig_mean_val.setText(str(format(v_mean, '.2f')))
+        self.ui.lb_orig_std_val.setText(str(format(v_std, '.2f')))
 
     def export_data(self) -> None:  # выгрузка данных
         self.model.save_to_file_xlsx('Обработанные данные.xlsx')
@@ -165,11 +174,12 @@ class MainWindow(QMainWindow):
         self.original_line = None
         self.step_line = None
 
-    def clear_step_graph(self) -> None:  # удаляет ступенчатый график
-        if self.step_line is not None:
-            self.step_line.remove()
-            self.step_line = None
-            self.canvas.ax.figure.canvas.draw()
+    # такой кнопки больше нет
+    # def clear_step_graph(self) -> None:  # удаляет ступенчатый график
+    #     if self.step_line is not None:
+    #         self.step_line.remove()
+    #         self.step_line = None
+    #         self.canvas.ax.figure.canvas.draw()
 
     def remove_original_graph(self, checked: bool) -> None:  # скрывает исходный график
         if self.original_line is not None:

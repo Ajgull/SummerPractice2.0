@@ -55,7 +55,8 @@ class Model:
 
     def perform_calculation(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float,
                             new_min: int, new_max: int) \
-            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:  # вычисления без контрастности с нормировкой, питон
+            -> tuple[
+                np.ndarray, np.ndarray, np.ndarray, np.ndarray]:  # вычисления без контрастности с нормировкой, питон
         print('perform calculation python')
         self.undefined_value = undef_val
         self.new_min = new_min
@@ -91,7 +92,8 @@ class Model:
 
     def perform_calculation1(self, min_z: float, max_z: float, contrast: float, step: float, undef_val: float,
                              new_min: int, new_max: int) \
-            -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:  # вычисления с контрастностью и с нормировкой, питон
+            -> tuple[
+                np.ndarray, np.ndarray, np.ndarray, np.ndarray]:  # вычисления с контрастностью и с нормировкой, питон
         print('perform calculation python')
         self.undefined_value = undef_val
         self.new_min = new_min
@@ -115,6 +117,9 @@ class Model:
 
             z_steps = []
             v_steps = []
+
+            z_steps.append(z_start)
+            v_steps.append(v_filtered[0])
 
             current_index = 0
             current_z = z_start
@@ -161,6 +166,9 @@ class Model:
                 else:
                     current_step += 1.0
 
+            z_steps.append(z_filtered[-1])
+            v_steps.append(v_filtered[-1])
+
             self.result = (z_steps, v_steps)
 
             return np.array(z_filtered), np.array(v_filtered), np.array(z_steps), np.array(v_steps)
@@ -198,12 +206,12 @@ class Model:
             print('No data to calculate')
             return np.array([]), np.array([]), np.array([]), np.array([])
 
-    def compute_statistics2(self) -> tuple[float, float, float, float]:  # вычисления статистики c++
+    def compute_statistics2(self, z_steps: np.array) -> tuple[float, float, float, float]:  # вычисления статистики c++
         if self.result is None:
             print('No results to calculate statistics2')
             return 0.0, 0.0, 0.0, 0.0
 
-        z_steps = self.result[1]
+        #z_steps = self.result[1]
 
         self.statistics_min, self.statistics_max, self.statistics_mean, self.statistics_std = (
             example.calculate_statistics2(z_steps))
