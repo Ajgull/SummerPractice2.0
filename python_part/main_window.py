@@ -93,7 +93,7 @@ class MainWindow(QMainWindow):
     def calculate(self) -> None:  # вычисления
         self.ui.CheckBox_Remove_Original.setChecked(False)
         self.ui.CheckBox_Remove_Step.setChecked(False)
-        v_data, z_data, x_steps, z_steps = self.model.perform_calculation1(
+        v_data, z_data, x_steps, z_steps = self.model.perform_calculation2(
             self.ui.SB_Min_Z.value(),
             self.ui.SB_Max_Z.value(),
             self.ui.SB_Contrast.value(),
@@ -158,7 +158,7 @@ class MainWindow(QMainWindow):
         ax_top.spines['bottom'].set_visible(False)
         ax_top.xaxis.set_ticks_position('top')
         ax_top.xaxis.set_label_position('top')
-        ax_top.set_xlabel('V, Ом * м', fontsize=8)
+        ax_top.set_xlabel('V, Ом · м', fontsize=8)
 
         # Устанавливаем одинаковые пределы по X для обеих осей
         ax_top.set_xlim(ax.get_xlim())

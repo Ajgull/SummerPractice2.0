@@ -82,7 +82,7 @@ py::tuple perform_calculation(
             temp_index++;
         }
 
-        if (count == 0) {
+        if (count == 0 || current_index == 0) {
             z_steps.push_back(current_z);
             z_steps.push_back(target_z);
             v_steps.push_back(last_v);
