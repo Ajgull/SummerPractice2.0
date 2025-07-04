@@ -10,7 +10,7 @@ sigma = 0.1
 k = np.sqrt(1j * omega * mu0 * (sigma - 1j * omega * epsilon))
 
 q = 5
-N=100
+N = 100
 x = np.linspace(-q, q, N)
 z = np.linspace(-q, q, N)
 X, Z = np.meshgrid(x, z)
@@ -29,8 +29,8 @@ Y11 = sph_harm_y(1, l, phi, theta)
 A_hom = (C * hl + C2 * h2l) * P11 * np.real(Y11) * np.exp(1j * m * phi)
 
 A_r = 0
-A_theta = mu0 * m / (4 * np.pi * r**2) * np.exp(1j * k * r) * (1j * k * r - 1) * (-np.sin(phi) * np.sin(theta))
-A_phi = mu0 * m / (4 * np.pi * r**2) * np.exp(1j * k * r) * (1j * k * r - 1) * (-np.sin(phi) * np.cos(theta))
+A_theta = mu0 * m / (4 * np.pi * r ** 2) * np.exp(1j * k * r) * (1j * k * r - 1) * (-np.sin(phi) * np.sin(theta))
+A_phi = mu0 * m / (4 * np.pi * r ** 2) * np.exp(1j * k * r) * (1j * k * r - 1) * (-np.sin(phi) * np.cos(theta))
 
 A_theta += A_hom.real
 A_phi += 0
@@ -51,11 +51,11 @@ E_z = 1j * omega * A_z
 
 Ex = np.real(E_x)
 Ez = np.real(E_z)
-magnitude_E = np.sqrt(Ex**2 + Ez**2)
-Ex_norm = Ex / (magnitude_E + 1e-20)
-Ez_norm = Ez / (magnitude_E + 1e-20)
+magnitude_E = np.sqrt(Ex ** 2 + Ez ** 2) + 1e-20
+Ex_norm = Ex / magnitude_E
+Ez_norm = Ez / magnitude_E
 
-magnitude_A = np.sqrt(np.abs(A_x)**2 + np.abs(A_y)**2 + np.abs(A_z)**2)
+magnitude_A = np.sqrt(np.abs(A_x) ** 2 + np.abs(A_y) ** 2 + np.abs(A_z) ** 2)
 
 plt.figure(figsize=(14, 6))
 
